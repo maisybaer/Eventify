@@ -37,6 +37,6 @@ if (!defined("PASSWD")) {
 }
 
 if (!defined("DATABASE")) {
-    define("DATABASE", "shoppin");
+    define("DATABASE", "eventify");
 }
 ?>

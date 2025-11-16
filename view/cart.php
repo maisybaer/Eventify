@@ -28,59 +28,7 @@ if (!empty($cart_items)) {
     <title>Shopping Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
-    <style>
-        .cart-container {
-            max-width: 1200px;
-            margin: 100px auto 50px;
-            padding: 24px;
-        }
-        .cart-table {
-            width: 100%;
-            background: #fff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-        }
-        .cart-table thead {
-            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
-            color: #fff;
-        }
-        .cart-table th, .cart-table td {
-            padding: 16px;
-            text-align: left;
-        }
-        .cart-table img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .qty-input {
-            width: 80px;
-            padding: 8px;
-            border: 2px solid #e8e8e8;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .cart-summary {
-            background: #fff;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            margin-top: 24px;
-        }
-        .cart-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .empty-msg {
-            text-align: center;
-            padding: 60px 24px;
-            color: var(--muted);
-        }
-    </style>
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
 </head>
 
 <body>

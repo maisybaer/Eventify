@@ -7,13 +7,7 @@ require_once '../settings/core.php';
     <meta charset="utf-8">
     <title>Search Results</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
-    <style>
-        .product-card { border:1px solid #ddd; padding:10px; border-radius:8px; width:220px; margin:8px; }
-        .product-grid { display:flex; flex-wrap:wrap; gap:12px; }
-        .product-card img{ width:100%; height:140px; object-fit:cover }
-        .pagination { margin-top: 16px; }
-    </style>
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
 </head>
 <body>
 

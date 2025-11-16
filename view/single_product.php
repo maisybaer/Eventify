@@ -17,24 +17,7 @@ if ($product_id > 0) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
-    
-    <style>
-        body { background-color: #f8f9fa; }
-        .product-container { padding-top: 100px; }
-        .card { max-width: 500px; margin: auto; }
-        .product-image { max-width: 100%; border-radius: 10px; }
-        .menu-tray {
-            position: fixed; top: 16px; right: 16px;
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #e9e9e9;
-            border-radius: 10px; padding: 6px 10px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            z-index: 1200;
-        }
-    </style>
-    
-    </style>
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
 
 </head>
 

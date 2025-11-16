@@ -8,11 +8,13 @@ session_start();
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
+
 </head>
 
 <body>
@@ -21,13 +23,9 @@ session_start();
             <div class="col-md-6">
                 <div class="card animate__animated animate__zoomIn">
                     <div class="card-header text-center highlight">
-                        <h4>Login</h4>
+                        <h4 class="text-light">Login</h4>
                     </div>
                     <div class="card-body">
-                        <!-- Alert Messages (To be handled by backend) -->
-                        <!-- Example:
-                        <div class="alert alert-info text-center">Login successful!</div>
-                        -->
 
                         <form method="POST" action="" class="mt-4" id="login-form">
                             <div class="mb-3">
@@ -42,10 +40,10 @@ session_start();
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        Don't have an account? <br>
-                        You can register as...
-                        <a href="register_customer.php" class="highlight">Register as a Customer</a>
-                        <a href="register_business.php" class="highlight">Register as a Business</a>.
+                        <h5>Don't have an account?</h5>
+                        You can register as...<br>
+                        <a href="register_customer.php" class="highlight">Register as a Customer</a> or
+                        <a href="register_business.php" class="highlight">Register as a Business</a>
                     </div>
                 </div>
             </div>

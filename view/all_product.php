@@ -11,32 +11,7 @@ require_once '../settings/core.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
-
-    <style>
-        .product-card {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            width: 200px;
-            margin: 10px;
-        }
-        .product-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-        select, input[type="text"] {
-            padding: 5px;
-            margin: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
 </head>
 <body>
 

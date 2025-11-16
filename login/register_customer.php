@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
 </head>
 
 <body>
@@ -16,7 +16,7 @@
             <div class="col-md-6">
                 <div class="card animate__animated animate__zoomIn">
                     <div class="card-header text-center highlight">
-                        <h4>Register as a Customer</h4>
+                        <h4 class="text-light">Register as a Customer</h4>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="" class="mt-4" id="register-form">
@@ -65,7 +65,8 @@
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        Already have an account? <a href="login.php" class="highlight">Login here</a>.
+                        Already have an account? <a href="login.php" class="highlight">Login here</a>.<br>
+                        Are you a business? <a href="register_business.php" class="highlight">Register here</a>.
                     </div>
                 </div>
             </div>

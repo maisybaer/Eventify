@@ -28,62 +28,7 @@ if (!empty($cart_items)) {
     <title>Checkout</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
-    <style>
-        .checkout-container {
-            max-width: 900px;
-            margin: 100px auto 50px;
-            padding: 24px;
-        }
-        .checkout-summary {
-            background: #fff;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: var(--card-shadow);
-        }
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .summary-total {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--brand);
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 2px solid var(--brand-light);
-        }
-        .payment-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-        .payment-modal.active {
-            display: flex;
-        }
-        .modal-content {
-            background: #fff;
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            justify-content: center;
-        }
-    </style>
+    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
 </head>
 
 <body>
