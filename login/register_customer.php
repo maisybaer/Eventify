@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Register - Taste of Africa</title>
+    <title>Customer Registreation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
@@ -16,7 +16,7 @@
             <div class="col-md-6">
                 <div class="card animate__animated animate__zoomIn">
                     <div class="card-header text-center highlight">
-                        <h4>Register</h4>
+                        <h4>Register as a Customer</h4>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="" class="mt-4" id="register-form">
@@ -56,12 +56,8 @@
                                 <label class="form-label">Register As</label>
                                 <div class="d-flex justify-content-start">
                                     <div class="form-check me-3 custom-radio">
-                                        <input class="form-check-input" type="radio" name="role" id="customer" value="2" checked>
+                                        <input class="form-check-input" type="radio" name="role" id="customer" value="3" checked>
                                         <label class="form-check-label" for="customer">Customer</label>
-                                    </div>
-                                    <div class="form-check custom-radio">
-                                        <input class="form-check-input" type="radio" name="role" id="owner" value="1">
-                                        <label class="form-check-label" for="owner">Admin</label>
                                     </div>
                                 </div>
                             </div>

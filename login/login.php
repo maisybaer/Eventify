@@ -8,7 +8,7 @@ session_start();
 
 <head>
     <meta charset="UTF-8">
-    <title>Login - Taste of Africa</title>
+    <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
@@ -42,7 +42,10 @@ session_start();
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        Don't have an account? <a href="register.php" class="highlight">Register here</a>.
+                        Don't have an account? <br>
+                        You can register as...
+                        <a href="register_customer.php" class="highlight">Register as a Customer</a>
+                        <a href="register_business.php" class="highlight">Register as a Business</a>.
                     </div>
                 </div>
             </div>
