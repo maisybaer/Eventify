@@ -55,51 +55,47 @@ $db = new db_connection();
 
                     <div class="card-body">
                         <form method="POST" action="" class="mt-4" id="addEventForm">
+                            <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
+
                             <div class="mb-3">
-                                <label for="eventName" class="form-label">Event Name</label>
+                                <label for="event_name" class="form-label">Event Name</label>
                                 <input type="text" class="form-control animate__animated animate__fadeInUp" id="event_name" name="event_name" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
                             </div>
 
                             <div class="mb-3">
-                                <label for="eventDesc" class="form-label">Event Description</label>
+                                <label for="event_desc" class="form-label">Event Description</label>
                                 <input type="text" class="form-control animate__animated animate__fadeInUp" id="event_desc" name="event_desc" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
+
                             </div>
 
                             <div class="mb-3">
-                                <label for="eventLocation" class="form-label">Location</label>
+                                <label for="event_location" class="form-label">Location</label>
                                 <input type="text" class="form-control animate__animated animate__fadeInUp" id="event_location" name="event_location" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
                             </div>
 
                             <div class="mb-3">
-                                <label for="eventDate" class="form-label">Date</label>
+                                <label for="event_date" class="form-label">Date</label>
                                 <input type="date" class="form-control animate__animated animate__fadeInUp" id="event_date" name="cat_name" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
                             </div>
 
                             <div class="mb-3">
-                                <label for="catName" class="form-label">Start Time</label>
-                                <input type="text" class="form-control animate__animated animate__fadeInUp" id="cat_name" name="cat_name" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
+                                <label for="event_start" class="form-label">Start Time</label>
+                                <input type="time" class="form-control animate__animated animate__fadeInUp" id="event_start" name="event_start" required>
                             </div>
 
                             <div class="mb-3">
-                                <label for="catName" class="form-label">End Time</label>
-                                <input type="text" class="form-control animate__animated animate__fadeInUp" id="cat_name" name="cat_name" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
+                                <label for="event_end" class="form-label">End Time</label>
+                                <input type="time" class="form-control animate__animated animate__fadeInUp" id="event_end" name="event_end" required>
                             </div>
 
                             <div class="mb-3">
-                                <label for="catName" class="form-label">Event Category</label>
-                                <input type="text" class="form-control animate__animated animate__fadeInUp" id="cat_name" name="cat_name" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
+                                <label for="event_cat" class="form-label">Event Category</label>
+                                <input type="time" class="form-control animate__animated animate__fadeInUp" id="event_cat" name="event_cat" required>
                             </div>
 
                             <div class="mb-3">
-                                <label for="user_image" class="form-label">Upload your event flyer</label>
-                                <input type="file" class="form-control animate__animated animate__fadeInUp" id="user_image" name="user_image">
+                                <label for="flyer" class="form-label">Upload your event flyer</label>
+                                <input type="file" class="form-control animate__animated animate__fadeInUp" id="flyer" name="flyer">
                             </div> 
 
                             <button type="submit" class="btn btn-custom w-100 animate-pulse-custom">Add New Event</button>
