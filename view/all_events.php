@@ -7,7 +7,7 @@ require_once '../settings/core.php';
 
 <head>
     <meta charset="UTF-8">
-    <title>All Products</title>
+    <title>All Events</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
@@ -33,22 +33,24 @@ require_once '../settings/core.php';
 	<div class="container" style="padding-top:120px;">
 		<div class="text-center">
             
-            <h1>All Products</h1>
-            <p>Shop all our products</p>
+            <h1>Discover an event near you.</h1> 
+            <p>Find and book amazing events happening in your area. From music festivals to art exhibitions, your next adventure awaits.</p>
 
         </div>
 
-            <div class="search-tray">
-                <input type="text" id="searchBox" placeholder="Search products...">
-                <button class="btn btn-sm btn-outline-secondary" id="searchBtn">Search</button>
+            <!-- Search and Filters -->
+            <div class="search-tray mb-4">
+                <i class="fas fa-search text-muted"></i>
+                <input type="text" id="searchBox" placeholder="Search for an event...">
 
-                <select id="categoryFilter">
-                    <option value="">Filter by Category</option>
+                <select id="typeFilter">
+                    <option value="">All Event Types</option>
                 </select>
 
-                <select id="brandFilter">
-                    <option value="">Filter by Brand</option>
-                </select>
+                <button class="btn btn-sm" id="searchBtn">
+                    Search
+                </button>
+                            
             </div>
         </div>
     </div>

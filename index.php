@@ -67,10 +67,6 @@ $role = getUserRole();
                             <div class="search-tray mb-4">
                                 <i class="fas fa-search text-muted"></i>
                                 <input type="text" id="searchBox" placeholder="Search for an event...">
-                                
-                                <select id="LocationFilter">
-                                    <option value="">All Locations</option>
-                                </select>
 
                                 <select id="typeFilter">
                                     <option value="">All Event Types</option>
@@ -82,8 +78,8 @@ $role = getUserRole();
                             </div>
 
                             <div class="text-center">
-                                <a href="view/all_product.php" class="btn btn-custom btn-lg">
-                                    Find Events
+                                <a href="view/all_events.php" class="btn btn-custom btn-lg">
+                                    See All Events
                                 </a>
                             </div>
                         </div>
@@ -103,6 +99,22 @@ $role = getUserRole();
                                     <h5>Events</h5>
                                     <p class="text-muted">Manage your events</p>
                                     <a href="admin/events.php" class="btn btn-custom mt-2">
+                                        <i class="fas fa-arrow-right me-2"></i>Manage
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Event Cat Card -->
+                        <div class="product-card">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3" style="font-size: 3rem; color: var(--brand);">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+                                    <h5>Categories</h5>
+                                    <p class="text-muted">Manage your events Categories</p>
+                                    <a href="admin/category.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>Manage
                                     </a>
                                 </div>
