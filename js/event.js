@@ -41,14 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(res => res.json())
         .then(resp => {
-            Swal.fire({
-                icon: 'success',
-                title: 'Event Added!',
-                text: resp.message,
-            });
-            loadEvent();
-            $('#addEventForm')[0].reset();
-        });
+            const icon = resp.status === 'success' ? 'success' : 'error';
+            Swal.fire({ icon: icon, title: resp.status === 'success' ? 'Event Added!' : 'Error', text: resp.message });
+            if (resp.status === 'success') {
+                loadEvent();
+                $('#addEventForm')[0].reset();
+            }
+        })
+        .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Network or server error.' }));
     });
 
     // Update Event (Popup)
@@ -92,7 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Category</label>
-                            <input type="text" class="form-control" id="edit_event_cat" required>
+                            <select class="form-control" id="edit_event_cat" required>
+                                <option value="">Loading categories...</option>
+                            </select>
                         </div>
 
                         <button type="submit" class="btn btn-custom w-100">Update Event</button>
@@ -125,14 +127,11 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(res => res.json())
             .then(resp => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated!',
-                    text: resp.message
-                });
-                closeForm();
-                loadEvent();
-            });
+                const icon = resp.status === 'success' ? 'success' : 'error';
+                Swal.fire({ icon: icon, title: resp.status === 'success' ? 'Updated!' : 'Error', text: resp.message });
+                if (resp.status === 'success') { closeForm(); loadEvent(); }
+            })
+            .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Network or server error.' }));
         };
     }
 
@@ -145,7 +144,31 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("edit_event_start").value = event.event_start;
         document.getElementById("edit_event_end").value = event.event_end;
         document.getElementById("edit_event_desc").value = event.event_desc;
-        document.getElementById("edit_event_cat").value = event.event_cat;
+
+        // Set category select (value should be category id)
+        const editCatSelect = document.getElementById("edit_event_cat");
+        if (editCatSelect) {
+            // ensure options are loaded then set value
+            const trySet = () => {
+                const opts = editCatSelect.querySelectorAll('option');
+                if (opts.length > 0) {
+                    // try set by value first
+                    editCatSelect.value = event.event_cat;
+                    if (editCatSelect.value === '' && event.event_cat) {
+                        // fallback: try to match by text
+                        for (let o of opts) {
+                            if ((o.textContent || '').trim() === (event.event_cat || '').trim()) {
+                                editCatSelect.value = o.value;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    setTimeout(trySet, 100);
+                }
+            };
+            trySet();
+        }
 
         document.getElementById("updateEventForm").style.display = "block";
     }
@@ -190,23 +213,72 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    // Load categories into the event form and edit popup
+    function loadCategoryOptions() {
+        fetch('../actions/fetch_category_action.php')
+            .then(res => res.json())
+            .then(data => {
+                const createSelect = document.getElementById('event_cat');
+                const editSelect = document.getElementById('edit_event_cat');
+
+                const buildOptions = (select) => {
+                    if (!select) return;
+                    select.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'No categories found';
+                        select.appendChild(opt);
+                        return;
+                    }
+                    const placeholder = document.createElement('option');
+                    placeholder.value = '';
+                    placeholder.textContent = 'Select Category';
+                    select.appendChild(placeholder);
+                    data.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.cat_id;
+                        opt.textContent = c.cat_name;
+                        select.appendChild(opt);
+                    });
+                };
+
+                buildOptions(createSelect);
+                buildOptions(editSelect);
+            })
+            .catch(() => {
+                const createSelect = document.getElementById('event_cat');
+                if (createSelect) createSelect.innerHTML = '<option value="">Error loading categories</option>';
+            });
+    }
+
     // Delete Event
     window.deleteEvent = function(event_id) {
-        let formData = new FormData();
-        formData.append("event_id", event_id);
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You are about to delete this event. This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let formData = new FormData();
+                formData.append("event_id", event_id);
 
-        fetch("../actions/delete_event_action.php", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => res.json())
-        .then(resp => {
-            Swal.fire({
-                icon: 'success',
-                title: 'Deleted!',
-                text: resp.message
-            });
-            loadEvent();
+                fetch("../actions/delete_event_action.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(resp => {
+                    const icon = resp.status === 'success' ? 'success' : 'error';
+                    Swal.fire({ icon: icon, title: resp.status === 'success' ? 'Deleted!' : 'Error', text: resp.message });
+                    if (resp.status === 'success') loadEvent();
+                })
+                .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Network or server error.' }));
+            }
         });
     };
 
@@ -216,5 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial setup
     createEditPopup();
     closeForm();
+    loadCategoryOptions();
     loadEvent();
 });

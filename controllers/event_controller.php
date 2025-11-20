@@ -3,18 +3,17 @@
 require_once '../classes/event_class.php';
 
 // Add event controller
-function add_event_ctr($eventCat, $eventTitle, $eventDescription, $eventKeywords, $eventImage, $eventDate, $eventLocation, $user_id)
+function add_event_ctr($event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat, $user_id)
 {
     $event = new Event();
-    return $event->addEvent($eventCat, $eventTitle, $eventDescription, $eventKeywords, $eventImage, $eventDate, $eventLocation, $user_id);
+    return $event->addEvent($event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat, $user_id);
 }
 
 // Update event controller
-function update_event_ctr($eventCat, $eventTitle, $eventDescription, $eventKeywords, $eventImage, $eventDate, $eventLocation, $event_id)
+function update_event_ctr($event_id, $event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat)
 {
     $event = new Event();
-    // Ensure argument order matches Event::updateEvent()
-    return $event->updateEvent($event_id, $eventCat, $eventTitle, $eventDescription, $eventKeywords, $eventImage, $eventDate, $eventLocation);
+    return $event->updateEvent($event_id, $event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat);
 }
 
 // Delete event controller

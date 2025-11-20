@@ -167,5 +167,54 @@ $role = getUserRole();
 
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load categories for search filter
+        document.addEventListener('DOMContentLoaded', () => {
+            const typeFilter = document.getElementById('typeFilter');
+            const searchBox = document.getElementById('searchBox');
+            const searchBtn = document.getElementById('searchBtn');
+
+            // Load categories
+            fetch('actions/fetch_category_action.php')
+                .then(res => res.json())
+                .then(categories => {
+                    if (Array.isArray(categories)) {
+                        categories.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat.cat_id;
+                            option.textContent = cat.cat_name;
+                            typeFilter.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error('Failed to load categories:', err));
+
+            // Search functionality
+            function performSearch() {
+                const query = searchBox.value.trim();
+                const category = typeFilter.value;
+                
+                const params = new URLSearchParams();
+                if (query) params.append('q', query);
+                if (category) params.append('category', category);
+                
+                const url = `view/all_events.php${params.toString() ? '?' + params.toString() : ''}`;
+                window.location.href = url;
+            }
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', performSearch);
+            }
+            
+            if (searchBox) {
+                searchBox.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performSearch();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

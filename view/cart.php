@@ -56,11 +56,32 @@ if (!empty($cart_items)) {
                             </tr>
                         </thead>
                         <tbody id="cartItems">
-                            <?php foreach ($cart_items as $item): ?>
+                            <?php foreach ($cart_items as $item): 
+                                // resolve image path (events may store 'uploads/filename')
+                                $img = $item['product_image'] ?? '';
+                                if ($img === null || $img === '') {
+                                    $imgUrl = '../uploads/no-image.svg';
+                                } elseif (strpos($img, 'uploads/') === 0) {
+                                    $imgUrl = '../' . $img; // e.g. '../uploads/filename'
+                                } elseif (strpos($img, '/uploads/') !== false) {
+                                    $imgUrl = $img; // assume usable path
+                                } else {
+                                    $imgUrl = '../uploads/' . $img;
+                                }
+                            ?>
                                 <tr data-product-id="<?= $item['product_id']; ?>">
-                                    <td><?= htmlspecialchars($item['product_title']); ?></td>
                                     <td>
-                                        <img src="../uploads/<?= htmlspecialchars($item['product_image']); ?>" 
+                                        <div class="fw-semibold"><?= htmlspecialchars($item['product_title']); ?></div>
+                                        <?php if (!empty($item['is_event'])): ?>
+                                            <div class="text-muted small mt-1">
+                                                <div><strong>Date:</strong> <?= htmlspecialchars($item['event_date'] ?? ''); ?></div>
+                                                <div><strong>Time:</strong> <?= htmlspecialchars(($item['event_start'] ?? '') . (($item['event_end'] ?? '') ? ' - ' . $item['event_end'] : '')); ?></div>
+                                                <div><strong>Location:</strong> <?= htmlspecialchars($item['event_location'] ?? ''); ?></div>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <img src="<?= htmlspecialchars($imgUrl); ?>" 
                                              alt="<?= htmlspecialchars($item['product_title']); ?>"
                                              onerror="this.src='../uploads/no-image.svg'">
                                     </td>

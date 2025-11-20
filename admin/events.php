@@ -1,12 +1,16 @@
 <?php
 require_once '../settings/core.php';
 require_once '../settings/db_class.php';
+require_once '../controllers/category_controller.php';
 
 $user_id = getUserID();
 $role = getUserRole();
 
 
 $db = new db_connection();
+
+// fetch categories created by this user (fallback to all categories if not per-user)
+$allCat = get_cat_ctr($user_id);
 
 ?>
 
@@ -45,8 +49,8 @@ $db = new db_connection();
             <h1>Manage your Events</h1>
             <h4>Create or manage your events.</h4>
         
-            <!-- Create category form-->
-            <div class="col-md-6">
+            <!-- Create event form -->
+            <div class="col-md-6 mb-4">
                 <div class="card animate__animated animate__zoomIn">
                     <div class="card-header text-center highlight">
                         <h4 class="text-light">Create a new event</h4>
@@ -63,8 +67,7 @@ $db = new db_connection();
 
                             <div class="mb-3">
                                 <label for="event_desc" class="form-label">Event Description</label>
-                                <input type="text" class="form-control animate__animated animate__fadeInUp" id="event_desc" name="event_desc" required>
-
+                                <textarea class="form-control animate__animated animate__fadeInUp" id="event_desc" name="event_desc" rows="3" required></textarea>
                             </div>
 
                             <div class="mb-3">
@@ -74,7 +77,7 @@ $db = new db_connection();
 
                             <div class="mb-3">
                                 <label for="event_date" class="form-label">Date</label>
-                                <input type="date" class="form-control animate__animated animate__fadeInUp" id="event_date" name="cat_name" required>
+                                <input type="date" class="form-control animate__animated animate__fadeInUp" id="event_date" name="event_date" required>
                             </div>
 
                             <div class="mb-3">
@@ -110,10 +113,8 @@ $db = new db_connection();
                 </div>
             </div>
 
-            <br> 
-
-            <!-- View Events-->
-            <div class="col-md-6">
+            <!-- View Events -->
+            <div class="col-md-6 mb-4">
                 <div class="card animate__animated animate__zoomIn">
                     <div class="card-header text-center highlight">
                         <h4>Your current Events</h4>
@@ -121,42 +122,22 @@ $db = new db_connection();
 
 
                     <div class="card-body">
-                        <table id="eventTable">
+                        <div class="table-responsive">
+                        <table id="eventTable" class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Event ID</th>
                                     <th>Event Name</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <td>No Events available</td>
-                                <td></td>
-                                <td>
-                                    <button onclick="openForm()" class="small btn btn-custom w-100 animate-pulse-custom">Edit</button>
-                                        <!-- Update Category Popup -->
-                                            <div id="updatePopup" class="form-popup">
-                                                <div class="card mx-auto p-4" style="max-width: 400px; background-color: #fff; border-radius: 10px;">
-                                                    <h5 class="text-center mb-3 highlight">Update Category</h5>
-                                                    <form id="updateForm">
-                                                        <div class="mb-3">
-                                                            <label for="update_cat_name" class="form-label">New Category Name</label>
-                                                            <input type="text" class="form-control" id="update_cat_name" required>
-                                                            <input type="hidden" id="update_cat_id">
-                                                        </div>
-                                                        <div class="d-flex justify-content-between">
-                                                            <button type="submit" id="saveUpdate" class="btn btn-custom">Save</button>
-                                                            <button type="button" id="cancelUpdate" class="btn btn-secondary">Cancel</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-
-                                    <button class="small btn btn-custom w-100 animate-pulse-custom">Delete</button>
-                                </td>
+                                <tr><td colspan="5">Loading events...</td></tr>
                             </tbody>
-
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,7 +149,7 @@ $db = new db_connection();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../js/category.js"></script>
+    <script src="../js/event.js"></script>
 
     
 </body>

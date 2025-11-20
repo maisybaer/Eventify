@@ -1,21 +1,23 @@
 <?php
+// Include the database connection file
+require_once(__DIR__ . '/../settings/db_class.php');
 
-require_once '../settings/db_class.php';
-
-class Order extends db_connection
-{
-    public function __construct()
-    {
-        parent::db_connect();
-    }
-
+/**
+ * Order Class - handles all order-related database operations
+ * This class extends the official database connection class
+ */
+class order_class extends db_connection {
+    
     /**
-     * Create a new order in the orders table.
-     * Returns the auto-generated order ID.
+     * Create a new order
+     * @param int $customer_id - Customer ID
+     * @param string $invoice_no - Unique invoice number
+     * @param string $order_date - Order date (YYYY-MM-DD)
+     * @param string $order_status - Order status (e.g., 'Pending', 'Completed')
+     * @return int|false - Returns order_id if successful, false if failed
      */
-    public function createOrder($customer_id, $invoice_no, $order_date, $order_status)
-    {
-        error_log("=== CREATE_ORDER METHOD CALLED ===");
+   public function create_order($customer_id, $invoice_no, $order_date, $order_status) {
+    error_log("=== CREATE_ORDER METHOD CALLED ===");
         try {
             // Get connection first
             $conn = $this->db_conn();
@@ -56,45 +58,23 @@ class Order extends db_connection
             }
             
         } catch (Exception $e) {
-            error_log("Exception in createOrder: " . $e->getMessage());
+            error_log("Exception in create_order: " . $e->getMessage());
             return false;
         }
     }
-
+    
     /**
-     * Add order details for both products and events
+     * Add order details (products) to an order
+     * @param int $order_id - Order ID
+     * @param int $product_id - Product ID
+     * @param int $qty - Quantity ordered
+     * @return bool - Returns true if successful, false if failed
      */
-    public function addOrderDetails($order_id, $product_id, $qty, $price = null)
-    {
+    public function add_order_details($order_id, $product_id, $qty) {
         try {
             $order_id = (int)$order_id;
             $product_id = (int)$product_id;
             $qty = (int)$qty;
-            
-            // If price not provided, get it from product/event tables
-            if ($price === null) {
-                $conn = $this->db_conn();
-                
-                // Try to get price from products table first
-                $sql = "SELECT product_price as price FROM products WHERE product_id = $product_id";
-                $result = mysqli_query($conn, $sql);
-                
-                if ($result && mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_assoc($result);
-                    $price = $row['price'];
-                } else {
-                    // Try events table (assuming events might have a price column in future)
-                    $sql = "SELECT COALESCE(event_price, 0) as price FROM events WHERE event_id = $product_id";
-                    $result = mysqli_query($conn, $sql);
-                    
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        $row = mysqli_fetch_assoc($result);
-                        $price = $row['price'];
-                    } else {
-                        $price = 0; // Default price for events without price
-                    }
-                }
-            }
             
             $sql = "INSERT INTO orderdetails (order_id, product_id, qty) 
                     VALUES ($order_id, $product_id, $qty)";
@@ -108,25 +88,32 @@ class Order extends db_connection
             return false;
         }
     }
-
+    
     /**
-     * Record payment with support for Paystack integration
+     * Record a payment for an order
+     * @param float $amount - Payment amount
+     * @param int $customer_id - Customer ID
+     * @param int $order_id - Order ID
+     * @param string $currency - Currency code (e.g., 'GHS', 'USD')
+     * @param string $payment_date - Payment date (YYYY-MM-DD)
+     * @param string $payment_method - Payment method (e.g., 'paystack', 'cash', 'bank_transfer')
+     * @param string $transaction_ref - Transaction reference/ID from payment gateway
+     * @param string $authorization_code - Authorization code from payment gateway
+     * @param string $payment_channel - Payment channel (e.g., 'card', 'mobile_money')
+     * @return int|false - Returns payment_id if successful, false if failed
      */
-    public function recordPayment($amount, $customer_id, $order_id, $currency = 'GHS', $payment_date = null, $payment_method = 'paystack', $transaction_ref = null, $authorization_code = null, $payment_channel = null) {
+    public function record_payment($amount, $customer_id, $order_id, $currency, $payment_date, $payment_method = 'direct', $transaction_ref = null, $authorization_code = null, $payment_channel = null) {
         error_log("=== RECORD_PAYMENT METHOD CALLED ===");
         try {
             $amount = (float)$amount;
             $customer_id = (int)$customer_id;
             $order_id = (int)$order_id;
-            $payment_date = $payment_date ?: date('Y-m-d H:i:s');
-            
-            $conn = $this->db_conn();
-            $currency = mysqli_real_escape_string($conn, $currency);
-            $payment_date = mysqli_real_escape_string($conn, $payment_date);
-            $payment_method = mysqli_real_escape_string($conn, $payment_method);
-            $transaction_ref = $transaction_ref ? mysqli_real_escape_string($conn, $transaction_ref) : null;
-            $authorization_code = $authorization_code ? mysqli_real_escape_string($conn, $authorization_code) : null;
-            $payment_channel = $payment_channel ? mysqli_real_escape_string($conn, $payment_channel) : null;
+            $currency = mysqli_real_escape_string($this->db_conn(), $currency);
+            $payment_date = mysqli_real_escape_string($this->db_conn(), $payment_date);
+            $payment_method = mysqli_real_escape_string($this->db_conn(), $payment_method);
+            $transaction_ref = $transaction_ref ? mysqli_real_escape_string($this->db_conn(), $transaction_ref) : null;
+            $authorization_code = $authorization_code ? mysqli_real_escape_string($this->db_conn(), $authorization_code) : null;
+            $payment_channel = $payment_channel ? mysqli_real_escape_string($this->db_conn(), $payment_channel) : null;
             
             // Build SQL with optional fields
             $columns = "(amt, customer_id, order_id, currency, payment_date, payment_method";
@@ -153,11 +140,11 @@ class Order extends db_connection
             error_log("Executing SQL: $sql");
             
             if ($this->db_write_query($sql)) {
-                $payment_id = mysqli_insert_id($conn);
+                $payment_id = $this->last_insert_id();
                 error_log("Payment recorded successfully with ID: $payment_id");
                 return $payment_id;
             } else {
-                $error = mysqli_error($conn);
+                $error = mysqli_error($this->db_conn());
                 error_log("Payment recording failed. MySQL error: " . $error);
                 return false;
             }
@@ -167,12 +154,13 @@ class Order extends db_connection
             return false;
         }
     }
-
+    
     /**
-     * Get all orders for a user with payment information
+     * Get all orders for a user
+     * @param int $customer_id - Customer ID
+     * @return array|false - Returns array of orders or false if failed
      */
-    public function getUserOrders($customer_id)
-    {
+    public function get_user_orders($customer_id) {
         try {
             $customer_id = (int)$customer_id;
             
@@ -201,8 +189,11 @@ class Order extends db_connection
     
     /**
      * Get details of a specific order
+     * @param int $order_id - Order ID
+     * @param int $customer_id - Customer ID (for security check)
+     * @return array|false - Returns order details or false if not found
      */
-    public function getOrderDetails($order_id, $customer_id) {
+    public function get_order_details($order_id, $customer_id) {
         try {
             $order_id = (int)$order_id;
             $customer_id = (int)$customer_id;
@@ -229,23 +220,23 @@ class Order extends db_connection
     }
     
     /**
-     * Get all products/events in a specific order
+     * Get all products in a specific order
+     * @param int $order_id - Order ID
+     * @return array|false - Returns array of products in the order or false if failed
      */
-    public function getOrderProducts($order_id) {
+    public function get_order_products($order_id) {
         try {
             $order_id = (int)$order_id;
             
             $sql = "SELECT 
                         od.product_id,
                         od.qty,
-                        COALESCE(p.product_title, e.event_name) as product_title,
-                        COALESCE(p.product_price, 0) as product_price,
-                        COALESCE(p.product_image, e.flyer) as product_image,
-                        CASE WHEN e.event_id IS NOT NULL THEN 1 ELSE 0 END AS is_event,
-                        (od.qty * COALESCE(p.product_price, 0)) as subtotal
+                        p.product_title,
+                        p.product_price,
+                        p.product_image,
+                        (od.qty * p.product_price) as subtotal
                     FROM orderdetails od
-                    LEFT JOIN products p ON od.product_id = p.product_id
-                    LEFT JOIN events e ON od.product_id = e.event_id
+                    INNER JOIN products p ON od.product_id = p.product_id
                     WHERE od.order_id = $order_id";
             
             return $this->db_fetch_all($sql);
@@ -258,8 +249,11 @@ class Order extends db_connection
     
     /**
      * Update order status
+     * @param int $order_id - Order ID
+     * @param string $order_status - New order status
+     * @return bool - Returns true if successful, false if failed
      */
-    public function updateOrderStatus($order_id, $order_status) {
+    public function update_order_status($order_id, $order_status) {
         try {
             $order_id = (int)$order_id;
             $order_status = mysqli_real_escape_string($this->db_conn(), $order_status);

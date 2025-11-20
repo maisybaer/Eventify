@@ -20,7 +20,7 @@ require_once '../settings/core.php';
 			
 			<a href="../index.php" class="btn btn-sm btn-outline-secondary">Home</a>
 			<a href=" ../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
-            <a href="view/basket.php" class="btn btn-sm btn-outline-secondary">Basket</a>
+            <a href="cart.php" class="btn btn-sm btn-outline-secondary">Basket</a>
 
 		<?php else: ?>
 			<a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
@@ -55,12 +55,35 @@ require_once '../settings/core.php';
         </div>
     </div>
 
-    <div id="productList" class="product-grid"></div>
+    <div id="eventList" class="product-grid"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../js/all_products.js"></script>
+    <script src="../js/all_event.js"></script>
+    <script>
+        // Handle URL search parameters
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('q');
+            const categoryParam = urlParams.get('category');
+            
+            if (searchQuery) {
+                const searchBox = document.getElementById('searchBox');
+                if (searchBox) searchBox.value = searchQuery;
+            }
+            
+            if (categoryParam) {
+                const typeFilter = document.getElementById('typeFilter');
+                if (typeFilter) {
+                    // Wait for categories to load then set value
+                    setTimeout(() => {
+                        typeFilter.value = categoryParam;
+                    }, 500);
+                }
+            }
+        });
+    </script>
     
 </body>
 </html>

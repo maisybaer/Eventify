@@ -1,159 +1,218 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const productList = document.getElementById('productList');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const brandFilter = document.getElementById('brandFilter');
+    const eventList = document.getElementById('eventList');
+    const typeFilter = document.getElementById('typeFilter');
     const searchBox = document.getElementById('searchBox');
     const searchBtn = document.getElementById('searchBtn');
-    let products = [];
-    const perPage = 10;
+    let allEvents = [];
+    const perPage = 12;
     let currentPage = 1;
 
-    function renderProducts(list, page = 1) {
-        if (!productList) return;
-        productList.innerHTML = '';
-        if (!list || list.length === 0) {
-            productList.innerHTML = '<p>No products found.</p>';
+    function renderEvents(events, page = 1) {
+        if (!eventList) return;
+        eventList.innerHTML = '';
+        
+        if (!events || events.length === 0) {
+            eventList.innerHTML = '<div class="text-center py-5"><h4>No events found</h4><p class="text-muted">Try adjusting your search criteria</p></div>';
             renderPager(0);
             return;
         }
 
-        const totalPages = Math.ceil(list.length / perPage) || 1;
+        const totalPages = Math.ceil(events.length / perPage) || 1;
         page = Math.max(1, Math.min(page, totalPages));
         currentPage = page;
         const start = (page - 1) * perPage;
-        const slice = list.slice(start, start + perPage);
+        const slice = events.slice(start, start + perPage);
 
-        slice.forEach(p => {
+        slice.forEach(event => {
             const card = document.createElement('div');
-            card.className = 'product-card';
-            // Prefer server-provided normalized image_url (added by fetch_product_action.php)
+            card.className = 'product-card animate__animated animate__fadeInUp';
+
+            // Determine image source
             let imgSrc = '';
-            if (p.image_url) {
-                imgSrc = p.image_url;
-            } else if (p.product_image) {
-                if (String(p.product_image).indexOf('uploads') !== -1) {
-                    imgSrc = '../' + String(p.product_image).replace(/^\/+/, '');
-                } else {
-                    imgSrc = '../uploads/' + String(p.product_image).replace(/^\/+/, '');
-                }
+            const fallback = '../uploads/no-image.svg';
+            if (event.flyer) {
+                imgSrc = event.flyer.startsWith('uploads/') ? '../' + event.flyer : '../uploads/' + event.flyer.replace(/^\/+/, '');
             }
-            const link = document.createElement('a');
-            link.href = `single_product.php?product_id=${encodeURIComponent(p.product_id)}`;
-            link.style.textDecoration = 'none';
-            link.style.color = 'inherit';
-            const fallbackSrc = p.image_url || '../uploads/no-image.svg';
+
+            // Format date and time
+            const eventDate = event.event_date ? new Date(event.event_date).toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) : '';
+            
+            const timeRange = (event.event_start && event.event_end) ? 
+                `${event.event_start} - ${event.event_end}` : 
+                event.event_start || '';
+
             card.innerHTML = `
-                <div style="height:150px;overflow:hidden;">
-                    <img src="${imgSrc}" alt="${(p.product_title||'Product')}" onerror="this.onerror=null;this.src='${fallbackSrc}'" />
+                <div class="card h-100 shadow-sm hover-lift">
+                    <div class="event-image-container" style="height: 200px; overflow: hidden;">
+                        <img src="${imgSrc || fallback}" 
+                             alt="${event.event_name || 'Event'}" 
+                             class="card-img-top w-100 h-100" 
+                             style="object-fit: cover;"
+                             onerror="this.onerror=null;this.src='${fallback}'">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-2">${event.event_name || 'Untitled Event'}</h5>
+                        
+                        <div class="mb-2">
+                            <small class="text-primary"><i class="fas fa-tag me-1"></i>${event.category || event.cat_name || 'General'}</small>
+                        </div>
+                        
+                        ${eventDate ? `
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-calendar-alt me-1"></i>${eventDate}</small>
+                        </div>` : ''}
+                        
+                        ${timeRange ? `
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${timeRange}</small>
+                        </div>` : ''}
+                        
+                        ${event.event_location ? `
+                        <div class="mb-3">
+                            <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>${event.event_location}</small>
+                        </div>` : ''}
+                        
+                        <div class="mt-auto">
+                            <a href="single_event.php?event_id=${event.event_id || event.id}" 
+                               class="btn btn-custom w-100">
+                                <i class="fas fa-ticket-alt me-2"></i>View Details
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <h5>${p.product_title || ''}</h5>
-                <p class="text-muted">${p.category || ''} • ${p.brand || ''}</p>
-                <p><strong>$${p.product_price || ''}</strong></p>
             `;
-            link.appendChild(card);
-            productList.appendChild(link);
+
+            eventList.appendChild(card);
         });
 
         renderPager(totalPages);
-    };
+    }
 
     function renderPager(totalPages) {
-        // create a basic pager below the product list
-        let pager = document.getElementById('productPager');
+        let pager = document.getElementById('eventPager');
         if (!pager) {
             pager = document.createElement('div');
-            pager.id = 'productPager';
-            pager.style.textAlign = 'center';
-            pager.style.marginTop = '16px';
-            productList.parentNode.insertBefore(pager, productList.nextSibling);
+            pager.id = 'eventPager';
+            pager.className = 'text-center mt-4';
+            eventList.parentNode.appendChild(pager);
         }
+        
         pager.innerHTML = '';
         if (totalPages <= 1) return;
 
-        const createBtn = (label, page, disabled) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-sm btn-outline-secondary m-1';
-            btn.textContent = label;
-            if (disabled) btn.disabled = true;
-            btn.addEventListener('click', () => {
-                applyFilters(page);
-            });
-            return btn;
-        };
+        const pagination = document.createElement('nav');
+        const ul = document.createElement('ul');
+        ul.className = 'pagination justify-content-center';
 
-        pager.appendChild(createBtn('Prev', Math.max(1, currentPage - 1), currentPage === 1));
+        // Previous button
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>`;
+        ul.appendChild(prevLi);
+
+        // Page numbers
         for (let i = 1; i <= totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-sm m-1 ' + (i === currentPage ? 'btn-primary' : 'btn-outline-secondary');
-            btn.textContent = i;
-            btn.addEventListener('click', () => applyFilters(i));
-            pager.appendChild(btn);
+            const li = document.createElement('li');
+            li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+            ul.appendChild(li);
         }
-        pager.appendChild(createBtn('Next', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
-    }
 
-    function populateFilters(items) {
-        if (!categoryFilter || !brandFilter) return;
-        const cats = {};
-        const brands = {};
-        items.forEach(p => {
-            if (p.product_cat) cats[p.product_cat] = p.category || p.product_cat;
-            if (p.product_brand) brands[p.product_brand] = p.brand || p.product_brand;
-        });
+        // Next button
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>`;
+        ul.appendChild(nextLi);
 
-        categoryFilter.innerHTML = '<option value="">Filter by Category</option>';
-        Object.keys(cats).forEach(id => {
-            const opt = document.createElement('option');
-            opt.value = id;
-            opt.textContent = cats[id];
-            categoryFilter.appendChild(opt);
-        });
+        pagination.appendChild(ul);
+        pager.appendChild(pagination);
 
-        brandFilter.innerHTML = '<option value="">Filter by Brand</option>';
-        Object.keys(brands).forEach(id => {
-            const opt = document.createElement('option');
-            opt.value = id;
-            opt.textContent = brands[id];
-            brandFilter.appendChild(opt);
+        // Add click handlers
+        pager.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target.classList.contains('page-link') && !e.target.parentNode.classList.contains('disabled')) {
+                const page = parseInt(e.target.dataset.page);
+                performSearch(page);
+            }
         });
     }
 
-    function loadAllProducts() {
-        fetch('../actions/fetch_product_action.php')
+    function loadCategories() {
+        fetch('../actions/fetch_category_action.php')
             .then(res => res.json())
-            .then(data => {
-                products = data || [];
-                renderProducts(products, 1);
-                populateFilters(products);
+            .then(categories => {
+                if (typeFilter && Array.isArray(categories)) {
+                    typeFilter.innerHTML = '<option value="">All Event Types</option>';
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.cat_id;
+                        option.textContent = cat.cat_name;
+                        typeFilter.appendChild(option);
+                    });
+                }
             })
             .catch(err => {
-                console.error('Failed to load products', err);
-                if (productList) productList.innerHTML = '<p>Cannot load items</p>';
+                console.error('Failed to load categories:', err);
             });
     }
 
-    function applyFilters(page = 1) {
-        const q = (searchBox && searchBox.value || '').toLowerCase();
-        const cat = categoryFilter ? categoryFilter.value : '';
-        const brand = brandFilter ? brandFilter.value : '';
-
-        const filtered = products.filter(p => {
-            if (cat && String(p.product_cat) !== String(cat)) return false;
-            if (brand && String(p.product_brand) !== String(brand)) return false;
-            if (q) {
-                const hay = ((p.product_title||'') + ' ' + (p.product_desc||'') + ' ' + (p.category||'') + ' ' + (p.brand||'')).toLowerCase();
-                return hay.indexOf(q) !== -1;
-            }
-            return true;
-        });
-
-        renderProducts(filtered, page);
+    function performSearch(page = 1) {
+        const query = searchBox ? searchBox.value.trim() : '';
+        const category = typeFilter ? typeFilter.value : '';
+        
+        // Build URL parameters
+        const params = new URLSearchParams();
+        if (query) params.append('q', query);
+        if (category) params.append('category', category);
+        
+        const url = `../actions/search_events_action.php${params.toString() ? '?' + params.toString() : ''}`;
+        
+        fetch(url)
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    allEvents = response.data || [];
+                    renderEvents(allEvents, page);
+                } else {
+                    throw new Error(response.message || 'Search failed');
+                }
+            })
+            .catch(err => {
+                console.error('Search failed:', err);
+                if (eventList) {
+                    eventList.innerHTML = '<div class="text-center py-5"><h4>Search Failed</h4><p class="text-muted">Please try again later</p></div>';
+                }
+            });
     }
 
-    if (searchBtn) searchBtn.addEventListener('click', () => applyFilters(1));
-    if (categoryFilter) categoryFilter.addEventListener('change', () => applyFilters(1));
-    if (brandFilter) brandFilter.addEventListener('change', () => applyFilters(1));
+    function loadAllEvents() {
+        performSearch(1); // Load all events initially
+    }
 
-    loadAllProducts();
+    // Event listeners
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => performSearch(1));
+    }
+    
+    if (searchBox) {
+        searchBox.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch(1);
+            }
+        });
+    }
+    
+    if (typeFilter) {
+        typeFilter.addEventListener('change', () => performSearch(1));
+    }
 
+    // Initialize
+    loadCategories();
+    loadAllEvents();
 });

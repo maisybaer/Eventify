@@ -13,7 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date     = $_POST['event_date'] ?? '';
     $event_start    = $_POST['event_start'] ?? '';
     $event_end      = $_POST['event_end'] ?? '';
-    $flyer          = $_POST['flyer'] ?? ''; // If uploaded via <input type="file">, handle $_FILES instead
+    // Handle uploaded flyer file (if any)
+    $flyer = '';
+    if (!empty($_FILES['flyer']) && !empty($_FILES['flyer']['tmp_name']) && is_uploaded_file($_FILES['flyer']['tmp_name'])) {
+        $uploadDir = __DIR__ . '/../uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+        $origName = basename($_FILES['flyer']['name']);
+        $ext = pathinfo($origName, PATHINFO_EXTENSION);
+        $safeBase = preg_replace('/[^A-Za-z0-9-_\.]/', '-', pathinfo($origName, PATHINFO_FILENAME));
+        $newName = $safeBase . '-' . time() . '.' . $ext;
+        $target = $uploadDir . $newName;
+        if (move_uploaded_file($_FILES['flyer']['tmp_name'], $target)) {
+            // store relative path used by front-end (e.g. 'uploads/filename')
+            $flyer = 'uploads/' . $newName;
+        }
+    } else {
+        $flyer = $_POST['flyer'] ?? '';
+    }
     $event_cat      = $_POST['event_cat'] ?? '';
     $user_id        = $_POST['user_id'] ?? '';
 
