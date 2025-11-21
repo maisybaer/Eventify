@@ -11,14 +11,23 @@ class Cart extends db_connection
     }
 
     /**
-     * Add a product to cart or update quantity if it exists
+     * Return the last mysqli error string for debugging
      */
-    public function addToCart($product_id, $customer_id, $qty)
+    public function getLastError()
     {
-        // Check if the product already exists in the cart for this customer
-        $check_query = "SELECT qty FROM cart WHERE product_id = ? AND customer_id = ?";
+        if (!$this->db) $this->db_connect();
+        return $this->db ? $this->db->error : '';
+    }
+
+    /**
+     * Add an event to cart or update quantity if it exists
+     */
+    public function addToCart($event_id, $customer_id, $qty)
+    {
+        // Check if the event already exists in the cart for this customer
+        $check_query = "SELECT qty FROM cart WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($check_query);
-        $stmt->bind_param("ii", $product_id, $customer_id);
+        $stmt->bind_param("ii", $event_id, $customer_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -27,15 +36,15 @@ class Cart extends db_connection
             $row = $result->fetch_assoc();
             $new_qty = $row['qty'] + $qty;
 
-            $update_query = "UPDATE cart SET qty = ? WHERE product_id = ? AND customer_id = ?";
+            $update_query = "UPDATE cart SET qty = ? WHERE event_id = ? AND customer_id = ?";
             $stmt = $this->db->prepare($update_query);
-            $stmt->bind_param("iii", $new_qty, $product_id, $customer_id);
+            $stmt->bind_param("iii", $new_qty, $event_id, $customer_id);
             return $stmt->execute();
         } else {
             // Add new product to cart
-            $insert_query = "INSERT INTO cart (product_id, customer_id, qty) VALUES (?, ?, ?)";
+            $insert_query = "INSERT INTO cart (event_id, customer_id, qty) VALUES (?, ?, ?)";
             $stmt = $this->db->prepare($insert_query);
-            $stmt->bind_param("iii", $product_id, $customer_id, $qty);
+            $stmt->bind_param("iii", $event_id, $customer_id, $qty);
             return $stmt->execute();
         }
     }
@@ -43,22 +52,22 @@ class Cart extends db_connection
     /**
      * Update the quantity of a product in the cart.
      */
-    public function updateCart($product_id, $customer_id, $qty)
+    public function updateCart($event_id, $customer_id, $qty)
     {
-        $query = "UPDATE cart SET qty = ? WHERE product_id = ? AND customer_id = ?";
+        $query = "UPDATE cart SET qty = ? WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($query);
-        $stmt->bind_param("iii", $qty, $product_id, $customer_id);
+        $stmt->bind_param("iii", $qty, $event_id, $customer_id);
         return $stmt->execute();
     }
 
     /**
      * Remove a product from the cart.
      */
-    public function removeFromCart($product_id, $customer_id)
+    public function removeFromCart($event_id, $customer_id)
     {
-        $query = "DELETE FROM cart WHERE product_id = ? AND customer_id = ?";
+        $query = "DELETE FROM cart WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($query);
-        $stmt->bind_param("ii", $product_id, $customer_id);
+        $stmt->bind_param("ii", $event_id, $customer_id);
         return $stmt->execute();
     }
 
@@ -82,13 +91,13 @@ class Cart extends db_connection
 
         $selectParts = [
             'c.cart_id',
-            'c.product_id',
+            'c.event_id',
             'c.qty',
             'c.customer_id',
-            'COALESCE(p.product_title, e.event_name) AS product_title',
-            "COALESCE(p.product_price, {$eventPriceExpr}, 0) AS product_price",
-            'COALESCE(p.product_image, e.flyer) AS product_image',
-            'CASE WHEN e.event_id IS NOT NULL THEN 1 ELSE 0 END AS is_event'
+            'e.event_name AS product_title',
+            "{$eventPriceExpr} AS product_price",
+            'e.flyer AS product_image',
+            '1 AS is_event'
         ];
 
         // add event fields if available (use aliases or NULL)
@@ -101,9 +110,8 @@ class Cart extends db_connection
         $select = implode(", ", $selectParts);
 
         $query = "SELECT {$select} FROM cart c
-                  LEFT JOIN products p ON c.product_id = p.product_id
-                  LEFT JOIN events e ON c.product_id = e.event_id
-                  WHERE c.customer_id = ?";
+              LEFT JOIN events e ON c.event_id = e.event_id
+              WHERE c.customer_id = ?";
 
         $stmt = $this->db->prepare($query);
         if (!$stmt) return [];
@@ -137,13 +145,13 @@ class Cart extends db_connection
     }
 
     /**
-     * Check if a product already exists in the cart for a specific customer.
+     * Check if an event already exists in the cart for a specific customer.
      */
-    public function existingProductCheck($product_id, $customer_id)
+    public function existingEventCheck($event_id, $customer_id)
     {
-        $query = "SELECT * FROM cart WHERE product_id = ? AND customer_id = ?";
+        $query = "SELECT * FROM cart WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($query);
-        $stmt->bind_param("ii", $product_id, $customer_id);
+        $stmt->bind_param("ii", $event_id, $customer_id);
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->num_rows > 0;

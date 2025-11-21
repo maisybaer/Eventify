@@ -22,9 +22,9 @@ function create_order_ctr($customer_id, $invoice_no, $order_date, $order_status)
  * @param int $qty - Quantity ordered
  * @return bool - Returns true if successful, false if failed
  */
-function add_order_details_ctr($order_id, $product_id, $qty) {
+function add_order_details_ctr($order_id, $event_id, $qty) {
     $order = new order_class();
-    return $order->add_order_details($order_id, $product_id, $qty);
+    return $order->add_order_details($order_id, $event_id, $qty);
 }
 
 /**

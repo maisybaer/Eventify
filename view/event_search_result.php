@@ -121,24 +121,23 @@ require_once '../settings/core.php';
                 return;
             }
             pageItems.forEach(p=>{
-                const id = p.product_id ?? p.id ?? p.productId ?? '';
-                const title = p.product_title ?? p.title ?? p.name ?? 'Untitled';
-                const price = p.product_price ?? p.price ?? 0;
-                const image = p.product_image ?? p.image ?? p.productImage ?? '';
-                const category = p.category ?? p.cat_name ?? p.category_name ?? '';
-                const brand = p.brand ?? p.brand_name ?? p.brand_name ?? '';
+                const id = p.event_id ?? p.id ?? p.eventId ?? '';
+                const title = p.event_name ?? p.title ?? p.name ?? 'Untitled';
+                const price = p.event_price ?? p.price ?? 0;
+                const image = p.flyer ?? p.image ?? p.event_image ?? '';
+                const category = p.cat_name ?? p.category_name ?? '';
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <a href="single_product.php?product_id=${encodeURIComponent(id)}" style="text-decoration:none;color:inherit">
+                    <a href="single_event.php?event_id=${encodeURIComponent(id)}" style="text-decoration:none;color:inherit">
                         <img src="${image || '../images/no-image.png'}" alt="${title}">
                         <div class="mt-2"><strong>${title}</strong></div>
                     </a>
-                    <div class="mt-1 text-muted">Category: ${category}<br>Brand: ${brand}</div>
+                    <div class="mt-1 text-muted">Category: ${category}</div>
                     <div class="mt-2"><strong>Price: $${Number(price).toFixed(2)}</strong></div>
                     <div class="mt-2">
-                        <a href="single_product.php?product_id=${encodeURIComponent(id)}" class="btn btn-sm btn-outline-primary">View</a>
+                        <a href="single_event.php?event_id=${encodeURIComponent(id)}" class="btn btn-sm btn-outline-primary">View</a>
                         <button data-id="${id}" class="btn btn-sm btn-success add-to-cart">Add to Cart</button>
                     </div>
                 `;

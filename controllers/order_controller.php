@@ -27,13 +27,13 @@ class OrderController
 
     /**
      * Add order details (cart items)
-     * $params: ['order_id', 'product_id', 'qty', 'price']
+     * $params: ['order_id', 'event_id', 'qty', 'price']
      */
     public function add_order_details_ctr($params)
     {
         return $this->order->addOrderDetails(
             $params['order_id'],
-            $params['product_id'],
+            $params['event_id'],
             $params['qty'],
             $params['price'] ?? null
         );
@@ -135,13 +135,13 @@ function create_order_from_cart_ctr($customer_id, $transaction_ref, $amount) {
         foreach ($cart_items as $item) {
             $detail_params = [
                 'order_id' => $order_id,
-                'product_id' => $item['product_id'],
+                'event_id' => $item['event_id'],
                 'qty' => $item['qty'],
                 'price' => $item['product_price']
             ];
             
             $order_controller->add_order_details_ctr($detail_params);
-            error_log("Added order detail - Product: {$item['product_id']}, Qty: {$item['qty']}");
+            error_log("Added order detail - Event: {$item['event_id']}, Qty: {$item['qty']}");
         }
         
         // Record payment

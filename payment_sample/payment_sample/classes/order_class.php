@@ -64,25 +64,25 @@ class order_class extends db_connection {
     }
     
     /**
-     * Add order details (products) to an order
+     * Add order details (events) to an order
      * @param int $order_id - Order ID
-     * @param int $product_id - Product ID
+     * @param int $event_id - Event ID
      * @param int $qty - Quantity ordered
      * @return bool - Returns true if successful, false if failed
      */
-    public function add_order_details($order_id, $product_id, $qty) {
+    public function add_order_details($order_id, $event_id, $qty) {
         try {
             $order_id = (int)$order_id;
-            $product_id = (int)$product_id;
+            $event_id = (int)$event_id;
             $qty = (int)$qty;
-            
-            $sql = "INSERT INTO orderdetails (order_id, product_id, qty) 
-                    VALUES ($order_id, $product_id, $qty)";
-            
-            error_log("Adding order detail - Order: $order_id, Product: $product_id, Qty: $qty");
-            
+
+            $sql = "INSERT INTO orderdetails (order_id, event_id, qty) 
+                    VALUES ($order_id, $event_id, $qty)";
+
+            error_log("Adding order detail - Order: $order_id, Event: $event_id, Qty: $qty");
+
             return $this->db_write_query($sql);
-            
+
         } catch (Exception $e) {
             error_log("Error adding order details: " . $e->getMessage());
             return false;
@@ -229,14 +229,14 @@ class order_class extends db_connection {
             $order_id = (int)$order_id;
             
             $sql = "SELECT 
-                        od.product_id,
+                        od.event_id,
                         od.qty,
-                        p.product_title,
-                        p.product_price,
-                        p.product_image,
-                        (od.qty * p.product_price) as subtotal
+                        e.event_name AS product_title,
+                        e.event_price AS product_price,
+                        e.flyer AS product_image,
+                        (od.qty * COALESCE(e.event_price,0)) as subtotal
                     FROM orderdetails od
-                    INNER JOIN products p ON od.product_id = p.product_id
+                    INNER JOIN events e ON od.event_id = e.event_id
                     WHERE od.order_id = $order_id";
             
             return $this->db_fetch_all($sql);

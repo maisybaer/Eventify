@@ -3,18 +3,16 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require_once '../settings/core.php';
-require_once '../controllers/product_controller.php';
+require_once '../controllers/event_controller.php';
 header('Content-Type: application/json');
 
-// Handle incoming requests
+// Backwards-compatible proxy for product endpoints — maps to events
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
-
-//view all products
     case 'view_all':
-        $products = view_all_product_ctr();
-        echo json_encode($data);
+        $events = view_all_events_ctr();
+        echo json_encode($events);
         break;
 
     case 'search':
@@ -24,13 +22,11 @@ switch ($action) {
         }
 
         $query = trim($_GET['query']);
-        $product = new Product();
-        $results = $product->search($query);
+        $results = search_events_ctr($query);
 
         echo json_encode($results);
         break;
 
-//filter by category
     case 'filter_by_category':
         if (!isset($_GET['cat_id']) || !is_numeric($_GET['cat_id'])) {
             echo json_encode(["status" => "error", "message" => "Invalid category ID"]);
@@ -38,42 +34,21 @@ switch ($action) {
         }
 
         $cat_id = intval($_GET['cat_id']);
-        $products = filter_by_cat_ctr($cat_id);
-
-        echo json_encode($products);
+        $events = filter_by_category_ctr($cat_id);
+        echo json_encode($events);
         break;
 
-
-//filter by brand
-    case 'filter_by_brand':
-        if (!isset($_GET['brand_id']) || !is_numeric($_GET['brand_id'])) {
-            echo json_encode(["status" => "error", "message" => "Invalid brand ID"]);
-            exit;
-        }
-
-        $brand_id = intval($_GET['brand_id']);
-        $products = filter_by_brand_ctr($brand_id);
-
-        echo json_encode($products);
-        break;
-
-
-//view single product
     case 'view_single':
-        if (!isset($_GET['product_id']) || !is_numeric($_GET['product_id'])) {
-            echo json_encode(["status" => "error", "message" => "Invalid product ID"]);
+        if (!isset($_GET['product_id']) && !isset($_GET['event_id'])) {
+            echo json_encode(["status" => "error", "message" => "Invalid product/event ID"]);
             exit;
         }
 
-        $product_id = intval($_GET['product_id']);
-        $product = view_single_product_ctr($product_id);
-
-        echo json_encode($product);
+        $id = isset($_GET['event_id']) ? intval($_GET['event_id']) : intval($_GET['product_id']);
+        $event = view_single_event_ctr($id);
+        echo json_encode($event);
         break;
 
-
-
-//default
     default:
         echo json_encode(["status" => "error", "message" => "Invalid action."]);
         break;

@@ -64,11 +64,11 @@ class Order extends db_connection
     /**
      * Add order details for both products and events
      */
-    public function addOrderDetails($order_id, $product_id, $qty, $price = null)
+    public function addOrderDetails($order_id, $event_id, $qty, $price = null)
     {
         try {
             $order_id = (int)$order_id;
-            $product_id = (int)$product_id;
+            $event_id = (int)$event_id;
             $qty = (int)$qty;
             
             // If price not provided, get it from product/event tables
@@ -76,7 +76,7 @@ class Order extends db_connection
                 $conn = $this->db_conn();
                 
                 // Try to get price from products table first
-                $sql = "SELECT product_price as price FROM products WHERE product_id = $product_id";
+                $sql = "SELECT product_price as price FROM products WHERE product_id = $event_id";
                 $result = mysqli_query($conn, $sql);
                 
                 if ($result && mysqli_num_rows($result) > 0) {
@@ -84,7 +84,7 @@ class Order extends db_connection
                     $price = $row['price'];
                 } else {
                     // Try events table (assuming events might have a price column in future)
-                    $sql = "SELECT COALESCE(event_price, 0) as price FROM events WHERE event_id = $product_id";
+                    $sql = "SELECT COALESCE(event_price, 0) as price FROM events WHERE event_id = $event_id";
                     $result = mysqli_query($conn, $sql);
                     
                     if ($result && mysqli_num_rows($result) > 0) {
@@ -96,10 +96,10 @@ class Order extends db_connection
                 }
             }
             
-            $sql = "INSERT INTO orderdetails (order_id, product_id, qty) 
-                    VALUES ($order_id, $product_id, $qty)";
+                $sql = "INSERT INTO orderdetails (order_id, event_id, qty) 
+                    VALUES ($order_id, $event_id, $qty)";
             
-            error_log("Adding order detail - Order: $order_id, Product: $product_id, Qty: $qty");
+                error_log("Adding order detail - Order: $order_id, Event: $event_id, Qty: $qty");
             
             return $this->db_write_query($sql);
             
@@ -183,7 +183,7 @@ class Order extends db_connection
                         o.order_status,
                         p.amt as total_amount,
                         p.currency,
-                        COUNT(od.product_id) as item_count
+                        COUNT(od.event_id) as item_count
                     FROM orders o
                     LEFT JOIN payment p ON o.order_id = p.order_id
                     LEFT JOIN orderdetails od ON o.order_id = od.order_id
@@ -236,16 +236,15 @@ class Order extends db_connection
             $order_id = (int)$order_id;
             
             $sql = "SELECT 
-                        od.product_id,
+                        od.event_id,
                         od.qty,
-                        COALESCE(p.product_title, e.event_name) as product_title,
-                        COALESCE(p.product_price, 0) as product_price,
-                        COALESCE(p.product_image, e.flyer) as product_image,
-                        CASE WHEN e.event_id IS NOT NULL THEN 1 ELSE 0 END AS is_event,
-                        (od.qty * COALESCE(p.product_price, 0)) as subtotal
+                        e.event_name as product_title,
+                        COALESCE(e.event_price, 0) as product_price,
+                        e.flyer as product_image,
+                        1 AS is_event,
+                        (od.qty * COALESCE(e.event_price, 0)) as subtotal
                     FROM orderdetails od
-                    LEFT JOIN products p ON od.product_id = p.product_id
-                    LEFT JOIN events e ON od.product_id = e.event_id
+                    LEFT JOIN events e ON od.event_id = e.event_id
                     WHERE od.order_id = $order_id";
             
             return $this->db_fetch_all($sql);

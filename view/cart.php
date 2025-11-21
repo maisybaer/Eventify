@@ -14,7 +14,7 @@ $cart_items = $cartController->get_user_cart_ctr($user_id);
 
 // Calculate total
 $cart_total = 0;
-if (!empty($cart_items)) {
+    if (!empty($cart_items)) {
     foreach ($cart_items as $item) {
         $cart_total += $item['qty'] * $item['product_price'];
     }
@@ -69,7 +69,7 @@ if (!empty($cart_items)) {
                                     $imgUrl = '../uploads/' . $img;
                                 }
                             ?>
-                                <tr data-product-id="<?= $item['product_id']; ?>">
+                                <tr data-event-id="<?= $item['event_id']; ?>">
                                     <td>
                                         <div class="fw-semibold"><?= htmlspecialchars($item['product_title']); ?></div>
                                         <?php if (!empty($item['is_event'])): ?>
@@ -88,12 +88,12 @@ if (!empty($cart_items)) {
                                     <td>$<?= number_format($item['product_price'], 2); ?></td>
                                     <td>
                                         <input type="number" class="qty-input" value="<?= $item['qty']; ?>" 
-                                               min="1" data-product-id="<?= $item['product_id']; ?>">
+                                               min="1" data-event-id="<?= $item['event_id']; ?>">
                                     </td>
                                     <td class="subtotal">$<?= number_format($item['product_price'] * $item['qty'], 2); ?></td>
                                     <td>
                                         <button class="btn btn-danger btn-sm remove-btn" 
-                                                data-product-id="<?= $item['product_id']; ?>">
+                                                data-event-id="<?= $item['event_id']; ?>">
                                             <i class="fas fa-trash"></i> Remove
                                         </button>
                                     </td>
