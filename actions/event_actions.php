@@ -24,8 +24,8 @@ switch ($action) {
         }
 
         $query = trim($_GET['query']);
-        $ev = new Event();
-        $results = $ev->search($query);
+        $evt = new Event();
+        $results = $evt->search($query);
 
         echo json_encode($results);
         break;

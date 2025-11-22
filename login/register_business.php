@@ -30,7 +30,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password <i class="fa fa-lock"></i></label>
-                                <input type="password" class="form-control animate__animated animate__fadeInUp" id="password" name="password" required>
+                                <input type="password" autocomplete="new-password" class="form-control animate__animated animate__fadeInUp" id="password" name="password" required>
                             </div>
 
                             <!--Updated register form-->

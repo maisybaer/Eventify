@@ -12,6 +12,31 @@ require_once '../settings/core.php';
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../settings/styles.css?v=1.1">
+
+    <style>
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            width: 200px;
+            margin: 10px;
+        }
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        select, input[type="text"] {
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
 
@@ -20,7 +45,7 @@ require_once '../settings/core.php';
 			
 			<a href="../index.php" class="btn btn-sm btn-outline-secondary">Home</a>
 			<a href=" ../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
-            <a href="cart.php" class="btn btn-sm btn-outline-secondary">Basket</a>
+            <a href="view/basket.php" class="btn btn-sm btn-outline-secondary">Basket</a>
 
 		<?php else: ?>
 			<a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
@@ -38,19 +63,14 @@ require_once '../settings/core.php';
 
         </div>
 
-            <!-- Search and Filters -->
-            <div class="search-tray mb-4">
-                <i class="fas fa-search text-muted"></i>
-                <input type="text" id="searchBox" placeholder="Search for an event...">
+            <div class="search-tray">
+                <input type="text" id="searchBox" placeholder="Search events...">
+                <button class="btn btn-sm btn-outline-secondary" id="searchBtn">Search</button>
 
-                <select id="typeFilter">
-                    <option value="">All Event Types</option>
+                <select id="categoryFilter">
+                    <option value="">Filter by Category</option>
                 </select>
 
-                <button class="btn btn-sm" id="searchBtn">
-                    Search
-                </button>
-                            
             </div>
         </div>
     </div>
@@ -60,30 +80,7 @@ require_once '../settings/core.php';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../js/all_event.js"></script>
-    <script>
-        // Handle URL search parameters
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('q');
-            const categoryParam = urlParams.get('category');
-            
-            if (searchQuery) {
-                const searchBox = document.getElementById('searchBox');
-                if (searchBox) searchBox.value = searchQuery;
-            }
-            
-            if (categoryParam) {
-                const typeFilter = document.getElementById('typeFilter');
-                if (typeFilter) {
-                    // Wait for categories to load then set value
-                    setTimeout(() => {
-                        typeFilter.value = categoryParam;
-                    }, 500);
-                }
-            }
-        });
-    </script>
+    <script src="../js/all_events.js"></script>
     
 </body>
 </html>

@@ -4,183 +4,124 @@ require_once '../settings/db_class.php';
 
 class Event extends db_connection
 {
+
     public function __construct()
     {
         parent::db_connect();
     }
 
-    /*===========================================
-        ADD EVENT
-    =============================================*/
-    public function addEvent($event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat, $user_id)
+
+
+    //function to add events
+    public function addEvent($eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey, $user_id)
     {
-        $stmt = $this->db->prepare("
-            INSERT INTO events 
-            (event_name, event_desc, event_location, event_date, event_start, event_end, flyer, event_cat, added_by) 
-            VALUES (?,?,?,?,?,?,?,?,?)
-        ");
-
-        // Bind parameters: all strings except event_cat and user_id (integers)
-        $stmt->bind_param(
-            "sssssssii",
-            $event_name,
-            $event_desc,
-            $event_location,
-            $event_date,
-            $event_start,
-            $event_end,
-            $flyer,
-            $event_cat,
-            $user_id
-        );
-
+        // Align with DB schema: eventify_products columns are
+        // event_cat, event_desc, event_price, event_location, event_start, event_end, flyer, event_keywords, added_by
+        $stmt = $this->db->prepare("INSERT INTO eventify_products(event_cat, event_desc, event_price, event_location, event_start, event_end, flyer, event_keywords, added_by) VALUES (?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("isdsssssi", $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd, $flyer, $eventKey, $user_id);
         return $stmt->execute();
     }
 
-    // Fetch events; if $user_id provided, only that user's events
-    public function getEvent($user_id = null)
+    //function to update events
+    public function updateEvent($event_id, $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey)
     {
-        $sql = "SELECT e.*, c.cat_name AS category FROM events e LEFT JOIN categories c ON e.event_cat = c.cat_id";
-        if ($user_id) {
-            $sql .= " WHERE e.added_by = " . intval($user_id);
+        if (!empty($flyer)) {
+            $stmt = $this->db->prepare("UPDATE eventify_products SET event_cat = ?, event_desc = ?, event_price = ?, event_location = ?, event_start = ?, event_end = ?, flyer = ?, event_keywords = ? WHERE event_id = ?");
+            $stmt->bind_param("isdsssssi", $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd, $flyer, $eventKey, $event_id);
+        } else {
+            $stmt = $this->db->prepare("UPDATE eventify_products SET event_cat = ?, event_desc = ?, event_price = ?, event_location = ?, event_start = ?, event_end = ?, event_keywords = ? WHERE event_id = ?");
+            $stmt->bind_param("isdssssi", $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd, $eventKey, $event_id);
         }
-        $sql .= " ORDER BY e.event_id DESC";
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
+        return $stmt->execute();
     }
 
-    public function viewAllEvents()
-    {
-        return $this->getEvent(null);
-    }
-
-    public function viewSingleEvent($event_id)
-    {
-        $sql = "SELECT e.*, c.cat_name AS category FROM events e LEFT JOIN categories c ON e.event_cat = c.cat_id WHERE e.event_id = " . intval($event_id) . " LIMIT 1";
-        return $this->db_fetch_one($sql);
-    }
-
-    public function filterByCategory($cat_id)
-    {
-        $sql = "SELECT e.*, c.cat_name AS category FROM events e LEFT JOIN categories c ON e.event_cat = c.cat_id WHERE e.event_cat = " . intval($cat_id) . " ORDER BY e.event_id DESC";
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
-    }
-
-    public function filterByDate($date)
-    {
-        $sql = "SELECT e.*, c.cat_name AS category FROM events e LEFT JOIN categories c ON e.event_cat = c.cat_id WHERE e.event_date = '" . mysqli_real_escape_string($this->db, $date) . "' ORDER BY e.event_id DESC";
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
-    }
-
-    public function updateEvent($event_id, $event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat)
-    {
-        if (!$this->db) $this->db_connect();
-        $stmt = $this->db->prepare("UPDATE events SET event_name = ?, event_desc = ?, event_location = ?, event_date = ?, event_start = ?, event_end = ?, flyer = ?, event_cat = ? WHERE event_id = ?");
-        if (!$stmt) return false;
-        $stmt->bind_param('sssssssii', $event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat, $event_id);
-        $ok = $stmt->execute();
-        $stmt->close();
-        return $ok;
-    }
-
+    //function to delete event
     public function deleteEvent($event_id)
     {
-        if (!$this->db) $this->db_connect();
-        $stmt = $this->db->prepare("DELETE FROM events WHERE event_id = ?");
-        if (!$stmt) return false;
-        $stmt->bind_param('i', $event_id);
-        $ok = $stmt->execute();
-        $stmt->close();
-        return $ok;
+        $stmt = $this->db->prepare("DELETE FROM eventify_products WHERE event_id=?");
+        $stmt->bind_param("i",$event_id);
+        return $stmt->execute();
     }
 
-    /**
-     * Search events by text across multiple fields
-     */
-    public function searchEvents($query)
+    //function to get event based on user ID
+    public function getEvent($user_id)
     {
-        $query = trim($query);
-        if (empty($query)) {
-            return $this->viewAllEvents();
-        }
-        
-        $search_term = "%" . mysqli_real_escape_string($this->db, $query) . "%";
-        
-        $sql = "SELECT e.*, c.cat_name AS category 
-                FROM events e 
-                LEFT JOIN categories c ON e.event_cat = c.cat_id 
-                WHERE e.event_name LIKE '$search_term' 
-                   OR e.event_desc LIKE '$search_term' 
-                   OR e.event_location LIKE '$search_term' 
-                   OR c.cat_name LIKE '$search_term'
-                ORDER BY e.event_date DESC, e.event_id DESC";
-        
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
+        // Return event rows including both the category/brand names and their IDs
+        $stmt = $this->db->prepare("SELECT 
+            p.event_id,  p.event_cat, 
+            c.cat_name AS category,
+            p.event_desc, p.event_price, p.event_location, p.event_start, p.event_end, p.flyer, p.event_keywords, p.added_by
+        FROM eventify_products p
+        JOIN eventify_categories c ON p.event_cat = c.cat_id
+        WHERE p.added_by = ?");
+
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    /**
-     * Search events with category filter
-     */
-    public function searchEventsWithCategory($query, $category_id)
-    {
-        $query = trim($query);
-        $category_id = intval($category_id);
-        
-        if (empty($query)) {
-            return $this->filterByCategory($category_id);
-        }
-        
-        $search_term = "%" . mysqli_real_escape_string($this->db, $query) . "%";
-        
-        $sql = "SELECT e.*, c.cat_name AS category 
-                FROM events e 
-                LEFT JOIN categories c ON e.event_cat = c.cat_id 
-                WHERE (e.event_name LIKE '$search_term' 
-                       OR e.event_desc LIKE '$search_term' 
-                       OR e.event_location LIKE '$search_term') 
-                   AND e.event_cat = $category_id
-                ORDER BY e.event_date DESC, e.event_id DESC";
-        
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
+
+    //view all products function
+    public function viewAllEvent(){
+        $stmt = $this->db->prepare("SELECT 
+            p.event_id, p.event_cat, 
+            c.cat_name AS category, 
+            p.event_desc, p.event_price, p.event_location, p.event_start, p.event_end, p.flyer, p.event_keywords, p.added_by FROM eventify_products p
+        JOIN eventify_categories c ON p.event_cat = c.cat_id");
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    /**
-     * Get upcoming events (future dates)
-     */
-    public function getUpcomingEvents($limit = null)
-    {
-        $today = date('Y-m-d');
-        $sql = "SELECT e.*, c.cat_name AS category 
-                FROM events e 
-                LEFT JOIN categories c ON e.event_cat = c.cat_id 
-                WHERE e.event_date >= '$today' 
-                ORDER BY e.event_date ASC, e.event_start ASC";
-        
-        if ($limit) {
-            $sql .= " LIMIT " . intval($limit);
-        }
-        
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
+    //search products function
+    public function search($query){
+        $like = "%{$query}%";
+        $stmt = $this->db->prepare("SELECT 
+            p.event_id, p.event_cat, 
+            c.cat_name AS category, 
+            p.event_desc, p.event_price, p.event_location, p.event_start, p.event_end, p.flyer, p.event_keywords, p.added_by
+        FROM eventify_products p
+        JOIN eventify_categories c ON p.event_cat = c.cat_id
+        WHERE p.event_desc LIKE ? OR p.event_keywords LIKE ?");
+
+        $stmt->bind_param("ss", $like, $like);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    /**
-     * Get events by location
-     */
-    public function getEventsByLocation($location)
-    {
-        $location = mysqli_real_escape_string($this->db, $location);
-        $sql = "SELECT e.*, c.cat_name AS category 
-                FROM events e 
-                LEFT JOIN categories c ON e.event_cat = c.cat_id 
-                WHERE e.event_location LIKE '%$location%' 
-                ORDER BY e.event_date DESC, e.event_id DESC";
-        
-        $rows = $this->db_fetch_all($sql);
-        return $rows ?: [];
+
+    //filter events function by category function
+    public function filterByCat($cat_id){
+        $stmt = $this->db->prepare("SELECT 
+            p.event_id, p.event_cat, 
+            c.cat_name AS category,
+                p.event_desc, p.event_price, p.event_location, p.event_start, p.event_end, p.flyer, p.event_keywords, p.added_by
+        FROM eventify_products p
+        JOIN eventify_categories c ON p.event_cat = c.cat_id
+        WHERE p.event_cat = ?");
+
+        $stmt->bind_param("i", $cat_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    //view single event function
+    public function viewSingleEvent($event_id){
+        $stmt = $this->db->prepare("SELECT 
+            p.event_id, p.event_cat,
+            c.cat_name AS category,
+            p.event_desc, p.event_price, p.event_location, p.event_start, p.event_end, p.flyer, p.event_keywords, p.added_by
+        FROM eventify_products p
+        JOIN eventify_categories c ON p.event_cat = c.cat_id
+        WHERE p.event_id = ?");
+
+        $stmt->bind_param("i", $event_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 }

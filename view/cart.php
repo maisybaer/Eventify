@@ -14,7 +14,7 @@ $cart_items = $cartController->get_user_cart_ctr($user_id);
 
 // Calculate total
 $cart_total = 0;
-    if (!empty($cart_items)) {
+if (!empty($cart_items)) {
     foreach ($cart_items as $item) {
         $cart_total += $item['qty'] * $item['product_price'];
     }
@@ -28,7 +28,59 @@ $cart_total = 0;
     <title>Shopping Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
+    <link rel="stylesheet" href="../settings/styles.css">
+    <style>
+        .cart-container {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 24px;
+        }
+        .cart-table {
+            width: 100%;
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+        .cart-table thead {
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+            color: #fff;
+        }
+        .cart-table th, .cart-table td {
+            padding: 16px;
+            text-align: left;
+        }
+        .cart-table img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .qty-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .cart-summary {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-top: 24px;
+        }
+        .cart-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .empty-msg {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--muted);
+        }
+    </style>
 </head>
 
 <body>
@@ -56,44 +108,23 @@ $cart_total = 0;
                             </tr>
                         </thead>
                         <tbody id="cartItems">
-                            <?php foreach ($cart_items as $item): 
-                                // resolve image path (events may store 'uploads/filename')
-                                $img = $item['product_image'] ?? '';
-                                if ($img === null || $img === '') {
-                                    $imgUrl = '../uploads/no-image.svg';
-                                } elseif (strpos($img, 'uploads/') === 0) {
-                                    $imgUrl = '../' . $img; // e.g. '../uploads/filename'
-                                } elseif (strpos($img, '/uploads/') !== false) {
-                                    $imgUrl = $img; // assume usable path
-                                } else {
-                                    $imgUrl = '../uploads/' . $img;
-                                }
-                            ?>
-                                <tr data-event-id="<?= $item['event_id']; ?>">
+                            <?php foreach ($cart_items as $item): ?>
+                                <tr data-product-id="<?= $item['product_id']; ?>">
+                                    <td><?= htmlspecialchars($item['product_title']); ?></td>
                                     <td>
-                                        <div class="fw-semibold"><?= htmlspecialchars($item['product_title']); ?></div>
-                                        <?php if (!empty($item['is_event'])): ?>
-                                            <div class="text-muted small mt-1">
-                                                <div><strong>Date:</strong> <?= htmlspecialchars($item['event_date'] ?? ''); ?></div>
-                                                <div><strong>Time:</strong> <?= htmlspecialchars(($item['event_start'] ?? '') . (($item['event_end'] ?? '') ? ' - ' . $item['event_end'] : '')); ?></div>
-                                                <div><strong>Location:</strong> <?= htmlspecialchars($item['event_location'] ?? ''); ?></div>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <img src="<?= htmlspecialchars($imgUrl); ?>" 
+                                        <img src="../uploads/<?= htmlspecialchars($item['product_image']); ?>" 
                                              alt="<?= htmlspecialchars($item['product_title']); ?>"
                                              onerror="this.src='../uploads/no-image.svg'">
                                     </td>
                                     <td>$<?= number_format($item['product_price'], 2); ?></td>
                                     <td>
                                         <input type="number" class="qty-input" value="<?= $item['qty']; ?>" 
-                                               min="1" data-event-id="<?= $item['event_id']; ?>">
+                                               min="1" data-product-id="<?= $item['product_id']; ?>">
                                     </td>
                                     <td class="subtotal">$<?= number_format($item['product_price'] * $item['qty'], 2); ?></td>
                                     <td>
                                         <button class="btn btn-danger btn-sm remove-btn" 
-                                                data-event-id="<?= $item['event_id']; ?>">
+                                                data-product-id="<?= $item['product_id']; ?>">
                                             <i class="fas fa-trash"></i> Remove
                                         </button>
                                     </td>

@@ -7,7 +7,13 @@ require_once '../settings/core.php';
     <meta charset="utf-8">
     <title>Search Results</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css?v=1.1">
+    <link rel="stylesheet" href="../settings/styles.css">
+    <style>
+        .product-card { border:1px solid #ddd; padding:10px; border-radius:8px; width:220px; margin:8px; }
+        .product-grid { display:flex; flex-wrap:wrap; gap:12px; }
+        .product-card img{ width:100%; height:140px; object-fit:cover }
+        .pagination { margin-top: 16px; }
+    </style>
 </head>
 <body>
 
@@ -39,11 +45,6 @@ require_once '../settings/core.php';
                     <option value="">All categories</option>
                 </select>
             </div>
-            <div class="col-md-4">
-                <select id="brandFilter" class="form-select">
-                    <option value="">All brands</option>
-                </select>
-            </div>
             <div class="col-md-4 text-end">
                 <small id="resultCount" class="text-muted"></small>
             </div>
@@ -65,7 +66,6 @@ require_once '../settings/core.php';
         const resultsEl = document.getElementById('results');
         const pagerEl = document.getElementById('pager');
         const categoryFilter = document.getElementById('categoryFilter');
-        const brandFilter = document.getElementById('brandFilter');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
         const resultCount = document.getElementById('resultCount');
@@ -88,19 +88,6 @@ require_once '../settings/core.php';
                 }).catch(()=>{});
         }
 
-        function fetchBrands(){
-            return fetch('../actions/fetch_brand_action.php')
-                .then(r => r.json())
-                .then(data => {
-                    if (!Array.isArray(data)) return;
-                    data.forEach(b => {
-                        const opt = document.createElement('option');
-                        opt.value = b.brand_id ?? b.id ?? b.brandId ?? '';
-                        opt.textContent = b.brand_name ?? b.name ?? b.brand ?? 'Unknown';
-                        brandFilter.appendChild(opt);
-                    });
-                }).catch(()=>{});
-        }
 
         function performSearch(query){
             const url = `../actions/product_actions.php?action=search&query=${encodeURIComponent(query)}`;
@@ -121,23 +108,23 @@ require_once '../settings/core.php';
                 return;
             }
             pageItems.forEach(p=>{
-                const id = p.event_id ?? p.id ?? p.eventId ?? '';
-                const title = p.event_name ?? p.title ?? p.name ?? 'Untitled';
-                const price = p.event_price ?? p.price ?? 0;
-                const image = p.flyer ?? p.image ?? p.event_image ?? '';
-                const category = p.cat_name ?? p.category_name ?? '';
+                const id = p.product_id ?? p.id ?? p.productId ?? '';
+                const title = p.product_title ?? p.title ?? p.name ?? 'Untitled';
+                const price = p.product_price ?? p.price ?? 0;
+                const image = p.product_image ?? p.image ?? p.productImage ?? '';
+                const category = p.category ?? p.cat_name ?? p.category_name ?? '';
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <a href="single_event.php?event_id=${encodeURIComponent(id)}" style="text-decoration:none;color:inherit">
+                    <a href="single_product.php?product_id=${encodeURIComponent(id)}" style="text-decoration:none;color:inherit">
                         <img src="${image || '../images/no-image.png'}" alt="${title}">
                         <div class="mt-2"><strong>${title}</strong></div>
                     </a>
                     <div class="mt-1 text-muted">Category: ${category}</div>
                     <div class="mt-2"><strong>Price: $${Number(price).toFixed(2)}</strong></div>
                     <div class="mt-2">
-                        <a href="single_event.php?event_id=${encodeURIComponent(id)}" class="btn btn-sm btn-outline-primary">View</a>
+                        <a href="single_product.php?product_id=${encodeURIComponent(id)}" class="btn btn-sm btn-outline-primary">View</a>
                         <button data-id="${id}" class="btn btn-sm btn-success add-to-cart">Add to Cart</button>
                     </div>
                 `;
@@ -166,15 +153,10 @@ require_once '../settings/core.php';
 
         function filteredProducts(){
             const cat = categoryFilter.value;
-            const brand = brandFilter.value;
             return allProducts.filter(p=>{
                 if(cat){
                     const pid = String(p.product_cat ?? p.cat_id ?? p.category_id ?? '');
                     if(pid !== String(cat)) return false;
-                }
-                if(brand){
-                    const bid = String(p.product_brand ?? p.brand_id ?? p.brandId ?? '');
-                    if(bid !== String(brand)) return false;
                 }
                 return true;
             });
@@ -206,25 +188,19 @@ require_once '../settings/core.php';
         }
 
         function populateFilters(items){
-            if (!categoryFilter || !brandFilter) return;
+            if (!categoryFilter) return;
             categoryFilter.innerHTML = '<option value="">All categories</option>';
-            brandFilter.innerHTML = '<option value="">All brands</option>';
             const cats = {};
-            const brands = {};
             items.forEach(p => {
                 if (p.product_cat) cats[p.product_cat] = p.category || p.product_cat;
-                if (p.product_brand) brands[p.product_brand] = p.brand || p.product_brand;
             });
             Object.keys(cats).forEach(id => {
                 const opt = document.createElement('option'); opt.value=id; opt.textContent=cats[id]; categoryFilter.appendChild(opt);
             });
-            Object.keys(brands).forEach(id => {
-                const opt = document.createElement('option'); opt.value=id; opt.textContent=brands[id]; brandFilter.appendChild(opt);
-            });
         }
 
         // initialize
-        Promise.all([fetchCategories(), fetchBrands()]).finally(()=>{
+        Promise.all([fetchCategories()]).finally(()=>{
             const q = (new URLSearchParams(window.location.search)).get('q') || searchInput.value || '';
             searchInput.value = q;
             doSearch(q);
@@ -232,7 +208,6 @@ require_once '../settings/core.php';
 
         searchBtn.addEventListener('click', ()=> doSearch(searchInput.value));
         categoryFilter.addEventListener('change', ()=> renderPage(1));
-        brandFilter.addEventListener('change', ()=> renderPage(1));
     });
     </script>
 </body>

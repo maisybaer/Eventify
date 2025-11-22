@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($cart_items as $item) {
         $detailsAdded = $orderController->add_order_details_ctr([
             'order_id' => $order_id,
-            'event_id' => $item['event_id'],
+            'product_id' => $item['product_id'],
             'qty' => $item['qty'],
             'price' => $item['product_price']
         ]);

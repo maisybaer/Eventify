@@ -1,78 +1,69 @@
 <?php
 require_once '../controllers/event_controller.php';
 require_once '../settings/core.php';
-
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //recieve data
 
-    // Collect POST data
-    $event_name     = $_POST['event_name'] ?? '';
-    $event_desc     = $_POST['event_desc'] ?? '';
-    $event_location = $_POST['event_location'] ?? '';
-    $event_date     = $_POST['event_date'] ?? '';
-    $event_start    = $_POST['event_start'] ?? '';
-    $event_end      = $_POST['event_end'] ?? '';
-    // Handle uploaded flyer file (if any)
+    $eventCat = $_POST['eventCat'] ?? '';
+    $eventDes = $_POST['eventDes'] ?? '';
+    $eventPrice = $_POST['eventPrice'] ?? '';
+    $eventLocation = $_POST['eventLocation'] ?? '';
+    $eventStart = $_POST['eventStart'] ?? ''; 
+    $eventEnd = $_POST['eventEnd'] ?? '';
+    $eventKey = $_POST['eventKey'] ?? '';
+    $user_id = $_POST['user_id'] ?? '';
     $flyer = '';
-    if (!empty($_FILES['flyer']) && !empty($_FILES['flyer']['tmp_name']) && is_uploaded_file($_FILES['flyer']['tmp_name'])) {
-        $uploadDir = __DIR__ . '/../uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-        $origName = basename($_FILES['flyer']['name']);
-        $ext = pathinfo($origName, PATHINFO_EXTENSION);
-        $safeBase = preg_replace('/[^A-Za-z0-9-_\.]/', '-', pathinfo($origName, PATHINFO_FILENAME));
-        $newName = $safeBase . '-' . time() . '.' . $ext;
-        $target = $uploadDir . $newName;
-        if (move_uploaded_file($_FILES['flyer']['tmp_name'], $target)) {
-            // store relative path used by front-end (e.g. 'uploads/filename')
-            $flyer = 'uploads/' . $newName;
-        }
-    } else {
-        $flyer = $_POST['flyer'] ?? '';
+    if (empty($eventCat) || empty($eventDes) || $eventPrice === '' || empty($eventLocation) || empty($eventStart) || empty($eventEnd) || empty($eventKey)) {
+        $response['status'] = 'error';
+        $response['message'] = 'Please fill in all fields!';
+        echo json_encode($response);
+        exit();
     }
-    $event_cat      = $_POST['event_cat'] ?? '';
-    $user_id        = $_POST['user_id'] ?? '';
 
-    // Validate required fields
-    if (
-        !empty($event_name) &&
-        !empty($event_location) &&
-        !empty($event_date) &&
-        !empty($event_start) &&
-        !empty($event_end) &&
-        !empty($event_cat) &&
-        !empty($user_id)
-    ) {
 
-        // Call controller function
-        $result = add_event_ctr(
-            $event_name,
-            $event_desc,
-            $event_location,
-            $event_date,
-            $event_start,
-            $event_end,
-            $flyer,
-            $event_cat,
-            $user_id
-        );
-
-        if ($result) {
-            echo json_encode([
-                "status" => "success",
-                "message" => "Event added successfully!"
-            ]);
-        } else {
-            echo json_encode([
-                "status" => "error",
-                "message" => "Failed to add event."
-            ]);
+    // For image upload 
+    if (isset($_FILES['flyer']) && $_FILES['flyer']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
         }
 
+        $fileTmp   = $_FILES['flyer']['tmp_name'];
+        $fileName  = basename($_FILES['flyer']['name']);
+        $fileExt   = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        // Allowed extensions
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+        if (!in_array($fileExt, $allowedExts)) {
+            $response['status'] = 'error';
+            $response['message'] = 'Only JPG, JPEG, PNG, and GIF images are allowed.';
+            echo json_encode($response);
+            exit();
+        }
+
+        // Unique filename
+        $newFileName = uniqid("IMG_", true) . "." . $fileExt;
+        $destPath = $uploadDir . $newFileName;
+
+        if (move_uploaded_file($fileTmp, $destPath)) {
+            // store filename only (consistent with update action)
+            $flyer = $newFileName;
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Image upload failed';
+            echo json_encode($response);
+            exit();
+        }
+    }
+
+    // Insert event
+    $result = add_event_ctr($eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd, $flyer, $eventKey, $user_id);
+    if ($result) {
+        echo json_encode(['status' => 'success', 'message' => 'event added successfully!']);
     } else {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required event fields."
-        ]);
+        echo json_encode(['status' => 'error', 'message' => 'Failed to add event']);
     }
 }
+?>

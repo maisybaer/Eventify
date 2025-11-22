@@ -72,6 +72,26 @@ if ($user_id) {
     $response['status'] = 'success';
     $response['message'] = 'Registered successfully';
     $response['user_id'] = $user_id;
+
+    // If this user is a vendor (role == 2), create a vendor record in `eventify_vendor`
+    if ((int)$role === 2) {
+        require_once '../settings/db_class.php';
+        $dbconn = new db_connection();
+        $dbconn->db_connect();
+        $mysqli = $dbconn->db;
+        if ($mysqli) {
+            $stmt = $mysqli->prepare("INSERT INTO eventify_vendor (vendor_desc, vendor_type) VALUES (?, ?)");
+            if ($stmt) {
+                $vendor_desc = $name;
+                $vendor_type = 'default';
+                $stmt->bind_param('ss', $vendor_desc, $vendor_type);
+                $ok = $stmt->execute();
+                if ($ok) {
+                    $response['vendor_id'] = $mysqli->insert_id;
+                }
+            }
+        }
+    }
 } else {
     $response['status'] = 'error';
     $response['message'] = 'Failed to register. See register_customer_action.php_register_user_ctr';

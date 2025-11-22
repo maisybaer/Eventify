@@ -2,58 +2,48 @@
 
 require_once '../classes/event_class.php';
 
-// Add event controller
-function add_event_ctr($event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat, $user_id)
+//add event controller
+function add_event_ctr($eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey, $user_id)
 {
     $event = new Event();
-    return $event->addEvent($event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat, $user_id);
+    return $event->addEvent($eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey, $user_id);
 }
 
-// Update event controller
-function update_event_ctr($event_id, $event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat)
+//update event controller
+function update_event_ctr($event_id, $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey)
 {
     $event = new Event();
-    return $event->updateEvent($event_id, $event_name, $event_desc, $event_location, $event_date, $event_start, $event_end, $flyer, $event_cat);
+    return $event->updateEvent($event_id, $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey);
 }
 
-// Delete event controller
+//delete event controller
 function delete_event_ctr($event_id)
 {
     $event = new Event();
     return $event->deleteEvent($event_id);
 }
 
-// Get events created by a specific user
+//get event controller
 function get_event_ctr($user_id)
 {
     $event = new Event();
     return $event->getEvent($user_id);
 }
 
-// View all events controller
-function view_all_events_ctr()
-{
+//view all events controller
+function view_all_event_ctr(){
     $event = new Event();
-    return $event->viewAllEvents();
+    return $event->viewAllEvent();
 }
 
-// Filter events by category
-function filter_by_category_ctr($cat_id)
-{
+//filter by category controller
+function filter_by_cat_ctr($cat_id){
     $event = new Event();
-    return $event->filterByCategory($cat_id);
-}
+    return $event->filterByCat($cat_id);
+}   
 
-// Filter events by date
-function filter_by_date_ctr($date)
-{
-    $event = new Event();
-    return $event->filterByDate($date);
-}
-
-// View single event
-function view_single_event_ctr($event_id)
-{
+//view single event controller 
+function view_single_event_ctr($event_id){
     $event = new Event();
     return $event->viewSingleEvent($event_id);
 }

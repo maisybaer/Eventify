@@ -2,7 +2,7 @@ $(document).ready(function() {
 
     // Update quantity when input changes
     $('.qty-input').on('change', function() {
-        const productId = $(this).data('event-id');
+        const productId = $(this).data('product-id');
         const qty = parseInt($(this).val());
 
         if (qty < 1) {
@@ -20,7 +20,7 @@ $(document).ready(function() {
 
     // Remove item from cart
     $('.remove-btn').on('click', function() {
-        const productId = $(this).data('event-id');
+        const productId = $(this).data('product-id');
         removeFromCart(productId);
     });
 
@@ -47,10 +47,10 @@ $(document).ready(function() {
 
     // Function to update quantity
     function updateQuantity(productId, qty) {
-            $.ajax({
+        $.ajax({
             url: '../actions/update_quantity_action.php',
             method: 'POST',
-            data: { event_id: productId, qty: qty },
+            data: { product_id: productId, qty: qty },
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
@@ -95,7 +95,7 @@ $(document).ready(function() {
                 $.ajax({
                     url: '../actions/remove_from_cart_action.php',
                     method: 'POST',
-                    data: { event_id: productId },
+                    data: { product_id: productId },
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
