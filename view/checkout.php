@@ -160,9 +160,7 @@ if (!empty($cart_items)) {
                     </div>
 
                     <div class="text-center mt-4">
-                        <button id="simulatePayBtn" class="btn btn-custom btn-lg">
-                            <i class="fas fa-credit-card"></i> Confirm Payment
-                        </button>
+                         <button onclick="showPaymentModal()" class="btn btn-primary">💳 Proceed to Payment</button>
                     </div>
                 </div>
 
