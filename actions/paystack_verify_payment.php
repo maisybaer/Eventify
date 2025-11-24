@@ -93,7 +93,7 @@ try {
     // Ensure we have expected total server-side (calculate from cart if frontend didn't send it)
     require_once '../controllers/cart_controller.php';
     if (!$cart_items || count($cart_items) == 0) {
-        $cart_items = get_user_cart_ctr(get_user_id());
+        $cart_items = get_user_cart_ctr(getUserID());
     }
 
     $calculated_total = 0.00;
@@ -132,8 +132,8 @@ try {
     require_once '../controllers/order_controller.php';
     require_once '../settings/db_class.php';
     
-    $customer_id = get_user_id();
-    $customer_name = get_user_name();
+    $customer_id = getUserID();
+    $customer_name = getUserName($customer_id);
     
     // Get fresh cart items if not provided
     if (!$cart_items || count($cart_items) == 0) {

@@ -8,7 +8,7 @@ require_once '../settings/paystack_config.php';
 error_log("=== PAYSTACK INITIALIZE TRANSACTION ===");
 
 // Check if user is logged in
-if (!is_logged_in()) {
+if (!checkLogin($email, $password)) {
     echo json_encode([
         'status' => 'error',
         'message' => 'Please login to complete payment'
@@ -49,8 +49,8 @@ if (!filter_var($customer_email, FILTER_VALIDATE_EMAIL)) {
 
 try {
     // Generate unique reference
-    $customer_id = get_user_id();
-    $reference = 'AYA-' . $customer_id . '-' . time();
+    $customer_id = getUserID();
+    $reference = 'EVENTIFY-' . $customer_id . '-' . time();
     
     error_log("Initializing transaction - Customer: $customer_id, Amount: $amount GHS, Email: $customer_email");
     

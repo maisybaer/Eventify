@@ -133,7 +133,7 @@ $role = getUserRole();
                                     </div>
                                     <h5>Orders</h5>
                                     <p class="text-muted">Track all orders</p>
-                                    <a href="admin/orders.php" class="btn btn-custom mt-2">
+                                    <a href="admin/order.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>View
                                     </a>
                                 </div>
