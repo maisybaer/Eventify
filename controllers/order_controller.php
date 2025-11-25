@@ -26,15 +26,14 @@ class OrderController
 
     /**
      * Add order details (cart items)
-     * $params: ['order_id', 'product_id', 'qty', 'price']
+     * $params: ['order_id', 'product_id', 'qty']
      */
     public function add_order_details_ctr($params)
     {
         return $this->order->addOrderDetails(
             $params['order_id'],
             $params['product_id'],
-            $params['qty'],
-            $params['price']
+            $params['qty']
         );
     }
 

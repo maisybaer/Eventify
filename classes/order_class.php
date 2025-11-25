@@ -15,8 +15,8 @@ class Order extends db_connection
      */
     public function createOrder($customer_id, $invoice_no, $order_date, $order_status)
     {
-        $query = "INSERT INTO orders (customer_id, invoice_no, order_date, order_status)
-                  VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO eventify_orders (customer_id, invoice_no, order_date, order_status)
+              VALUES (?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("isss", $customer_id, $invoice_no, $order_date, $order_status);
         $stmt->execute();
@@ -26,14 +26,14 @@ class Order extends db_connection
     }
 
     /**
-     * Add order details (product_id, quantity, price) to orderdetails table.
+     * Add order details (event_id, quantity) to eventify_orderdetails table.
      */
-    public function addOrderDetails($order_id, $product_id, $qty, $price)
+    public function addOrderDetails($order_id, $product_id, $qty)
     {
-        $query = "INSERT INTO orderdetails (order_id, product_id, qty, price)
-                  VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO eventify_orderdetails (order_id, event_id, qty)
+              VALUES (?, ?, ?)";
         $stmt = $this->db->prepare($query);
-        $stmt->bind_param("iiid", $order_id, $product_id, $qty, $price);
+        $stmt->bind_param("iii", $order_id, $product_id, $qty);
         return $stmt->execute();
     }
 
@@ -42,8 +42,8 @@ class Order extends db_connection
      */
     public function recordPayment($amt, $customer_id, $order_id, $currency, $payment_date)
     {
-        $query = "INSERT INTO payments (amt, customer_id, order_id, currency, payment_date)
-                  VALUES (?, ?, ?, ?, ?)";
+        $query = "INSERT INTO eventify_payment (amt, customer_id, order_id, currency, payment_date)
+              VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("diiss", $amt, $customer_id, $order_id, $currency, $payment_date);
         return $stmt->execute();
@@ -54,7 +54,7 @@ class Order extends db_connection
      */
     public function getUserOrders($customer_id)
     {
-        $query = "SELECT * FROM orders WHERE customer_id = ? ORDER BY order_date DESC";
+        $query = "SELECT * FROM eventify_orders WHERE customer_id = ? ORDER BY order_date DESC";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("i", $customer_id);
         $stmt->execute();
@@ -65,7 +65,7 @@ class Order extends db_connection
     //function to delete order
     public function deleteOrder($order_id)
     {
-        $stmt = $this->db->prepare("DELETE FROM orders WHERE order_id=?");
+        $stmt = $this->db->prepare("DELETE FROM eventify_orders WHERE order_id=?");
         $stmt->bind_param("i",$order_id);
         return $stmt->execute();
     }
@@ -87,7 +87,7 @@ class Order extends db_connection
             $order_date = mysqli_real_escape_string($conn, $order_date);
             $order_status = mysqli_real_escape_string($conn, $order_status);
             
-            $sql = "INSERT INTO orders (customer_id, invoice_no, order_date, order_status) 
+                $sql = "INSERT INTO eventify_orders (customer_id, invoice_no, order_date, order_status) 
                     VALUES ($customer_id, '$invoice_no', '$order_date', '$order_status')";
             
             error_log("Executing SQL: $sql");
@@ -131,7 +131,7 @@ class Order extends db_connection
             $product_id = (int)$product_id;
             $qty = (int)$qty;
             
-            $sql = "INSERT INTO orderdetails (order_id, product_id, qty) 
+                $sql = "INSERT INTO eventify_orderdetails (order_id, event_id, qty) 
                     VALUES ($order_id, $product_id, $qty)";
             
             error_log("Adding order detail - Order: $order_id, Product: $product_id, Qty: $qty");
@@ -190,7 +190,7 @@ class Order extends db_connection
             $columns .= ")";
             $values .= ")";
             
-            $sql = "INSERT INTO payment $columns VALUES $values";
+            $sql = "INSERT INTO eventify_payment $columns VALUES $values";
             
             error_log("Executing SQL: $sql");
             
@@ -226,10 +226,10 @@ class Order extends db_connection
                         o.order_status,
                         p.amt as total_amount,
                         p.currency,
-                        COUNT(od.product_id) as item_count
-                    FROM orders o
-                    LEFT JOIN payment p ON o.order_id = p.order_id
-                    LEFT JOIN orderdetails od ON o.order_id = od.order_id
+                        COUNT(od.event_id) as item_count
+                    FROM eventify_orders o
+                    LEFT JOIN eventify_payment p ON o.order_id = p.order_id
+                    LEFT JOIN eventify_orderdetails od ON o.order_id = od.order_id
                     WHERE o.customer_id = $customer_id
                     GROUP BY o.order_id
                     ORDER BY o.order_date DESC, o.order_id DESC";
@@ -262,8 +262,8 @@ class Order extends db_connection
                         p.amt as total_amount,
                         p.currency,
                         p.payment_date
-                    FROM orders o
-                    LEFT JOIN payment p ON o.order_id = p.order_id
+                    FROM eventify_orders o
+                    LEFT JOIN eventify_payment p ON o.order_id = p.order_id
                     WHERE o.order_id = $order_id AND o.customer_id = $customer_id";
             
             return $this->db_fetch_one($sql);
@@ -284,14 +284,14 @@ class Order extends db_connection
             $order_id = (int)$order_id;
             
             $sql = "SELECT 
-                        od.product_id,
+                        od.event_id as product_id,
                         od.qty,
-                        p.product_title,
-                        p.product_price,
-                        p.product_image,
-                        (od.qty * p.product_price) as subtotal
-                    FROM orderdetails od
-                    INNER JOIN products p ON od.product_id = p.product_id
+                        p.event_desc as product_title,
+                        p.event_price as product_price,
+                        p.flyer as product_image,
+                        (od.qty * p.event_price) as subtotal
+                    FROM eventify_orderdetails od
+                    INNER JOIN eventify_products p ON od.event_id = p.event_id
                     WHERE od.order_id = $order_id";
             
             return $this->db_fetch_all($sql);
@@ -313,7 +313,7 @@ class Order extends db_connection
             $order_id = (int)$order_id;
             $order_status = mysqli_real_escape_string($this->db_conn(), $order_status);
             
-            $sql = "UPDATE orders SET order_status = '$order_status' WHERE order_id = $order_id";
+            $sql = "UPDATE eventify_orders SET order_status = '$order_status' WHERE order_id = $order_id";
             
             error_log("Updating order status: $order_id to $order_status");
             
