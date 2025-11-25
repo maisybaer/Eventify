@@ -41,6 +41,28 @@ class VendorClass extends db_connection
     }
 
     /**
+     * Return all vendors (customers with role=2) joined with vendor table when available.
+     * Returns array of associative rows where customer fields are present and vendor_* fields appended.
+     */
+    public function getAllVendors()
+    {
+        $conn = $this->db_conn();
+        if (!$conn) return false;
+
+        // note: customer table uses 'user_role' column (see customer_class.php), not 'role'
+        $sql = "SELECT c.*, v.vendor_id, v.vendor_type, v.vendor_desc FROM eventify_customer c LEFT JOIN eventify_vendor v ON v.vendor_desc = c.customer_name WHERE c.user_role = 2";
+        $res = mysqli_query($conn, $sql);
+        if (!$res) return false;
+
+        $out = [];
+        while ($row = mysqli_fetch_assoc($res)) {
+            $out[] = $row;
+        }
+
+        return $out;
+    }
+
+    /**
      * Update customer and vendor metadata in a transaction.
      * $data may contain: customer_id, customer_name, customer_email, customer_contact, vendor_id (optional), vendor_type, vendor_desc
      */

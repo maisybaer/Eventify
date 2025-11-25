@@ -105,6 +105,23 @@ $role = getUserRole();
                             </div>
                         </div>
 
+                        <!--Book Vendor Card -->
+                        <div class="product-card">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3" style="font-size: 3rem; color: var(--brand);">
+                                        <i class="fas fa-people"></i>
+                                    </div>
+                                    <h5>Book a Vendor</h5>
+                                    <p class="text-muted">Book vendors for your event</p>
+                                    <a href="view/all_vendor.php" class="btn btn-custom mt-2">
+                                        <i class="fas fa-arrow-right me-2"></i>Book
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+
                         <!-- Categories Card -->
                         <div class="product-card">
                             <div class="card h-100">
