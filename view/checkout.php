@@ -55,33 +55,63 @@ if (!empty($cart_items)) {
             padding-top: 16px;
             border-top: 2px solid var(--brand-light);
         }
-        .payment-modal {
+        .modal {
             display: none;
             position: fixed;
             inset: 0;
             z-index: 2000;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
             align-items: center;
             justify-content: center;
+            padding: 24px;
         }
-        .payment-modal.active {
+        .modal.active {
             display: flex;
         }
         .modal-content {
             background: #fff;
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
+            padding: 28px;
+            border-radius: 14px;
+            max-width: 620px;
+            width: 100%;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 12px 40px rgba(2,6,23,0.25);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 22px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
         .modal-buttons {
             display: flex;
             gap: 12px;
-            margin-top: 24px;
+            margin-top: 22px;
             justify-content: center;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #0ea5a4;
+            color: white;
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
         }
     </style>
 </head>
@@ -110,29 +140,16 @@ if (!empty($cart_items)) {
                     <td><input type="text" id="name" name="name" required></td>
                 </tr>
                 <tr>
+                    <td><label for="customer_email">Email:</label></td>
+                    <td><input type="email" id="customer_email" name="customer_email" required value="<?= htmlspecialchars(getUserEmail()) ?>"></td>
+                </tr>
+                <tr>
                     <td><label for="address">Address Line 1:</label></td>
                     <td><input type="text" id="address" name="address" required></td>
                 </tr>
                 <tr>
                     <td><label for="address">Address Line 2:</label></td>
                     <td><input type="text" id="address" name="address" required></td>
-                </tr>
-                <tr>
-                    <td><label for="payment">Payment Method:</label></td>
-                    <td>
-                        <div class="form-check custom-radio">
-                        <input class="form-check-input" type="radio" name="payment_method" id="payment_method" value="Credit Card">
-                        <label class="form-check-label" for="payment_method">Credit Card</label>
-                    </div>
-                    <div class="form-check custom-radio">
-                        <input class="form-check-input" type="radio" name="payment_method" id="payment_method" value="Mobile Money">
-                        <label class="form-check-label" for="payment_method">Mobile Money</label>
-                    </div>
-                    <div class="form-check custom-radio">
-                        <input class="form-check-input" type="radio" name="payment_method" id="payment_method" value="Cash on Delivery">
-                        <label class="form-check-label" for="payment_method">Cash on Delivery</label>
-                    </div>
-                    </td>
                 </tr>
             </table>
         </form>
@@ -164,17 +181,64 @@ if (!empty($cart_items)) {
                     </div>
                 </div>
 
-                <!-- Payment Modal -->
-                <div id="paymentModal" class="payment-modal">
+                <!-- Payment Modal (Paystack) -->
+                <div id="paymentModal" class="modal" aria-hidden="true">
                     <div class="modal-content">
-                        <h2 class="mb-3">Confirm Payment</h2>
-                        <p class="text-muted">Click confirm to proceed.</p>
-                        <p class="mt-3"><strong>Total Amount: $<?= number_format($cart_total, 2); ?></strong></p>
+                        <span class="modal-close" onclick="closePaymentModal()">&times;</span>
+                        <h2 class="modal-title">Secure Payment via Paystack</h2>
+
+                        <div style="text-align: center; margin: 18px 0 8px;">
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px;">Amount to Pay</div>
+                            <div id="paymentAmount" style="font-size: 32px; font-weight: 700; color: #dc2626;">$<?= number_format($cart_total, 2); ?></div>
+                            <div id="paymentBreakdown" style="margin-top:10px; font-size:14px; color:#f3f4f6;"></div>
+                        </div>
+
+                        <div style="background: linear-gradient(135deg, #111827 0%, #374151 100%); color: white; padding: 16px; border-radius: 12px; margin: 18px 0; box-shadow: 0 6px 18px rgba(2,6,23,0.2);">
+                            <div style="font-size: 12px; opacity: 0.85;">SECURED PAYMENT</div>
+                            <div style="font-size: 16px; font-weight: 700; margin-top: 6px;">🔒 Pay with Paystack</div>
+                            <div style="font-size: 12px; opacity: 0.85; margin-top: 8px;">You will be redirected to Paystack's secure gateway to complete payment.</div>
+                        </div>
+
+                        <p style="text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 14px;">Please confirm to continue to payment.</p>
+
                         <div class="modal-buttons">
-                            <button id="confirmPayBtn" class="btn btn-custom btn-lg">
-                                <i class="fas fa-check"></i> Yes, I've Paid
-                            </button>
-                            <button id="cancelPayBtn" class="btn btn-outline-secondary btn-lg">Cancel</button>
+                            <button class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+                            <button id="confirmPaymentBtn" onclick="processCheckout()" class="btn btn-primary">💳 Pay Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Modal -->
+                <div id="successModal" class="modal" aria-hidden="true">
+                    <div class="modal-content">
+                        <h2 class="modal-title">🎉 Order Successful!</h2>
+
+                        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 16px; border-radius: 12px; margin: 12px 0; border: 1px solid #6ee7b7;">
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 12px; color: #065f46; margin-bottom: 4px;">Invoice Number</div>
+                                <div id="successInvoice" style="font-size: 18px; font-weight: 700; color: #047857;"></div>
+                            </div>
+                            <div style="border-top: 1px solid rgba(6, 95, 70, 0.12); padding-top: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #065f46;">
+                                    <span>Total Paid:</span>
+                                    <span id="successAmount" style="font-weight: 600;"></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #065f46;">
+                                    <span>Date:</span>
+                                    <span id="successDate"></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #065f46;">
+                                    <span>Items:</span>
+                                    <span id="successItems"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="text-align: center; color: #6b7280; margin-bottom: 16px;">Thank you for your order! A receipt has been sent to your email.</p>
+
+                        <div class="modal-buttons">
+                            <button onclick="continueShopping()" class="btn btn-secondary">Continue Shopping</button>
+                            <button onclick="viewOrders()" class="btn btn-primary">View Orders</button>
                         </div>
                     </div>
                 </div>

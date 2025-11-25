@@ -1,94 +1,4 @@
-$(document).ready(function() {
-    
-    const paymentModal = $('#paymentModal');
-    const simulatePayBtn = $('#simulatePayBtn');
-    const confirmPayBtn = $('#confirmPayBtn');
-    const cancelPayBtn = $('#cancelPayBtn');
-    const messageContainer = $('#checkoutMessage');
 
-    // Show payment modal when simulate payment button is clicked
-    simulatePayBtn.on('click', function() {
-        paymentModal.addClass('active');
-    });
-
-    // Cancel payment
-    cancelPayBtn.on('click', function() {
-        paymentModal.removeClass('active');
-        messageContainer.html(`
-            <div class="alert alert-warning" role="alert">
-                <i class="fas fa-exclamation-triangle"></i> Payment cancelled.
-            </div>
-        `);
-    });
-
-    // Confirm payment and process checkout
-    confirmPayBtn.on('click', function() {
-        // Disable button to prevent double submission
-        confirmPayBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-
-        $.ajax({
-            url: '../actions/process_checkout_action.php',
-            method: 'POST',
-            dataType: 'json',
-            success: function(response) {
-                paymentModal.removeClass('active');
-                
-                if (response.status === 'success') {
-                    // Show success message with order details
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Order Placed Successfully!',
-                        html: `
-                            <p><strong>Order Reference:</strong> ${response.invoice_no}</p>
-                            <p><strong>Total Amount:</strong> $${response.total_amount}</p>
-                            <p>Thank you for your purchase!</p>
-                        `,
-                        confirmButtonText: 'Continue Shopping',
-                        allowOutsideClick: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = 'all_product.php';
-                        }
-                    });
-                } else {
-                    // Show error message
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Payment Failed',
-                        text: response.message,
-                        confirmButtonText: 'Try Again'
-                    });
-                    confirmPayBtn.prop('disabled', false).html('<i class="fas fa-check"></i> Yes, I\'ve Paid');
-                }
-            },
-            error: function(xhr, status, error) {
-                paymentModal.removeClass('active');
-                console.error('Checkout error:', error);
-                
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred during checkout. Please try again.',
-                    confirmButtonText: 'OK'
-                });
-                
-                confirmPayBtn.prop('disabled', false).html('<i class="fas fa-check"></i> Yes, I\'ve Paid');
-            }
-        });
-    });
-
-    // Close modal when clicking outside
-    paymentModal.on('click', function(e) {
-        if ($(e.target).is('#paymentModal')) {
-            paymentModal.removeClass('active');
-            messageContainer.html(`
-                <div class="alert alert-warning" role="alert">
-                    <i class="fas fa-exclamation-triangle"></i> Payment cancelled.
-                </div>
-            `);
-        }
-    });
-});
 
 
 
@@ -199,8 +109,38 @@ function displayCheckoutItems(items, total) {
 function showPaymentModal() {
     const modal = document.getElementById('paymentModal');
     const amountDisplay = document.getElementById('paymentAmount');
-    
-    amountDisplay.textContent = `GHS ${window.checkoutTotal || '0.00'}`;
+    const breakdownEl = document.getElementById('paymentBreakdown');
+    // Compute a numeric base total robustly and avoid global name collisions.
+    let baseTotal = 0;
+    // Prefer internal numeric storage if set
+    if (typeof window._checkoutBaseTotalNumber === 'number' && !isNaN(window._checkoutBaseTotalNumber)) {
+        baseTotal = window._checkoutBaseTotalNumber;
+    } else if (window.checkoutTotal && !isNaN(parseFloat(window.checkoutTotal))) {
+        baseTotal = parseFloat(window.checkoutTotal);
+    } else {
+        const totalEl = document.getElementById('checkoutTotal');
+        if (totalEl) {
+            const txt = (totalEl.textContent || totalEl.innerText || '');
+            const num = txt.replace(/[^0-9\.\,]/g, '').replace(/,/g, '');
+            baseTotal = parseFloat(num) || 0;
+        }
+    }
+
+    // Apply 15% transaction fee and compute fee amount
+    const feeRate = 0.15;
+    const feeAmount = +(baseTotal * feeRate).toFixed(2);
+    const totalWithFee = +(baseTotal + feeAmount).toFixed(2);
+
+    // Cache numeric totals on window with unlikely-to-conflict names
+    window._checkoutBaseTotalNumber = baseTotal;
+    window._checkoutFeeAmount = feeAmount;
+    window._checkoutTotalWithFeeNumber = totalWithFee;
+
+    // Display the fee-inclusive total and the breakdown
+    amountDisplay.textContent = `GHS ${totalWithFee.toFixed(2)}`;
+    if (breakdownEl) {
+        breakdownEl.innerHTML = `<div style="color:#e5e7eb;">Subtotal: GHS ${baseTotal.toFixed(2)} &middot; Fee (15%): GHS ${feeAmount.toFixed(2)}</div>`;
+    }
     
     modal.style.display = 'flex';
     
@@ -242,44 +182,62 @@ function processCheckout() {
     confirmBtn.disabled = true;
     confirmBtn.textContent = 'Redirecting to Paystack...';
     
-    // Get customer email from session or prompt
-    const customerEmail = prompt('Please enter your email for payment:', '');
-    
+    // Get customer email from the checkout form
+    const emailInput = document.getElementById('customer_email');
+    const customerEmail = emailInput ? emailInput.value.trim() : '';
+
     if (!customerEmail) {
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;
-        showToast('Email is required for payment', 'error');
+        showToast('Please enter a valid email address to continue', 'error');
+        if (emailInput) emailInput.focus();
+        return;
+    }
+
+    // Basic email pattern validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(customerEmail)) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+        showToast('Please enter a valid email address', 'error');
+        if (emailInput) emailInput.focus();
         return;
     }
     
-    // Step 1: Initialize Paystack transaction
+    // Step 1: Initialize Paystack transaction with fee-included amount
+    const amountToSend = parseFloat(window._checkoutTotalWithFeeNumber || window.checkoutTotal || 0);
+
+    // Redirect the main window to the authorization URL returned by the server.
+    // We no longer open popups to avoid popup-related complexity and browser blocking.
+
     fetch('../actions/paystack_init_transaction.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            amount: window.checkoutTotal,
+            amount: amountToSend,
             email: customerEmail
         })
     })
     .then(response => response.json())
     .then(data => {
         console.log('Paystack init response:', data);
-        
+
         if (data.status === 'success') {
             // Store data for verification after payment
             window.paymentReference = data.reference;
             window.cartItems = window.currentCartItems || null;
             window.totalAmount = window.checkoutTotal;
-            
-            // Redirect to Paystack payment page
+
+            // Close modal in main window and redirect the current window to Paystack
             closePaymentModal();
             showToast('Redirecting to secure payment...', 'success');
-            
+
             setTimeout(() => {
+                // Navigate the main window to the authorization URL
                 window.location.href = data.authorization_url;
-            }, 1500);
+            }, 300);
         } else {
             showToast(data.message || 'Failed to initialize payment', 'error');
             confirmBtn.disabled = false;
@@ -293,6 +251,9 @@ function processCheckout() {
         confirmBtn.textContent = originalText;
     });
 }
+
+// Listen for messages from the payment popup (paystack callback)
+// No postMessage handling: we now use main-window redirects for the payment flow.
 
 /**
  * Show success modal with order details

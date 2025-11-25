@@ -9,7 +9,7 @@ require_once '../settings/core.php';
 require_once '../settings/paystack_config.php';
 
 // Check if user is logged in
-if (!is_logged_in()) {
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     header('Location: ../login/login.php');
     exit();
 }
@@ -91,16 +91,20 @@ error_log("Reference from URL: $reference");
             const reference = '<?php echo htmlspecialchars($reference); ?>';
             
             try {
+                const payload = {
+                    reference: reference,
+                    cart_items: null, // Will be fetched from backend
+                    total_amount: null // Will be calculated from cart
+                };
+
+                // Use real verification on the server; no simulate flag sent
+
                 const response = await fetch('../actions/paystack_verify_payment.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        reference: reference,
-                        cart_items: null, // Will be fetched from backend
-                        total_amount: null // Will be calculated from cart
-                    })
+                    body: JSON.stringify(payload)
                 });
                 
                 const data = await response.json();
@@ -112,13 +116,12 @@ error_log("Reference from URL: $reference");
                 if (data.status === 'success' && data.verified) {
                     // Payment verified successfully
                     document.getElementById('successBox').style.display = 'block';
-                    
-                    // Redirect to success page immediately
-                    setTimeout(() => {
-                        // Redirect to orders or success page
-                        window.location.replace(`payment_success.php?reference=${encodeURIComponent(reference)}&invoice=${encodeURIComponent(data.invoice_no)}`);
-                    }, 500);
-                    
+
+                        // Redirect to success page in the current window
+                        setTimeout(() => {
+                            window.location.replace(`payment_success.php?reference=${encodeURIComponent(reference)}&invoice=${encodeURIComponent(data.invoice_no)}`);
+                        }, 500);
+
                 } else {
                     // Payment verification failed
                     const errorMsg = data.message || 'Payment verification failed';

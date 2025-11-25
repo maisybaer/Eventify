@@ -11,8 +11,8 @@ require_once '../settings/paystack_config.php';
 
 error_log("=== PAYSTACK CALLBACK/VERIFICATION ===");
 
-// Check if user is logged in
-if (!is_logged_in()) {
+// Check if user is logged in (ensure session user id exists)
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     echo json_encode([
         'status' => 'error',
         'message' => 'Session expired. Please login again.'
@@ -43,20 +43,18 @@ if (isset($_SESSION['paystack_ref']) && $_SESSION['paystack_ref'] !== $reference
 try {
     error_log("Verifying Paystack transaction - Reference: $reference");
     
-    // Verify transaction with Paystack
+    // Verify transaction with Paystack via the API
     $verification_response = paystack_verify_transaction($reference);
-    
     if (!$verification_response) {
         throw new Exception("No response from Paystack verification API");
     }
-    
     error_log("Paystack verification response: " . json_encode($verification_response));
-    
+
     // Check if verification was successful
     if (!isset($verification_response['status']) || $verification_response['status'] !== true) {
         $error_msg = $verification_response['message'] ?? 'Payment verification failed';
         error_log("Payment verification failed: $error_msg");
-        
+
         echo json_encode([
             'status' => 'error',
             'message' => $error_msg,
@@ -92,8 +90,9 @@ try {
     
     // Ensure we have expected total server-side (calculate from cart if frontend didn't send it)
     require_once '../controllers/cart_controller.php';
+    $cartController = new CartController();
     if (!$cart_items || count($cart_items) == 0) {
-        $cart_items = get_user_cart_ctr(getUserID());
+        $cart_items = $cartController->get_user_cart_ctr(getUserID());
     }
 
     $calculated_total = 0.00;
@@ -107,11 +106,15 @@ try {
         }
     }
 
+    // Apply transaction fee (15%) to the server calculated subtotal
+    $feeRate = 0.15;
+    $calculated_total_with_fee = round($calculated_total * (1 + $feeRate), 2);
+
     if ($total_amount <= 0) {
-        $total_amount = round($calculated_total, 2);
+        $total_amount = $calculated_total_with_fee;
     }
 
-    error_log("Expected order total (server): $total_amount GHS");
+    error_log("Expected order total (server, with fee): $total_amount GHS (subtotal: $calculated_total, fee: " . number_format($calculated_total_with_fee - $calculated_total, 2) . ")");
 
     // Verify amount matches (with 1 pesewa tolerance)
     if (abs($amount_paid - $total_amount) > 0.01) {
@@ -137,7 +140,7 @@ try {
     
     // Get fresh cart items if not provided
     if (!$cart_items || count($cart_items) == 0) {
-        $cart_items = get_user_cart_ctr($customer_id);
+        $cart_items = $cartController->get_user_cart_ctr($customer_id);
     }
     
     if (!$cart_items || count($cart_items) == 0) {
@@ -157,52 +160,65 @@ try {
         $invoice_no = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
         $order_date = date('Y-m-d');
         
-        // Create order in database
-        $order_id = create_order_ctr($customer_id, $invoice_no, $order_date, 'Paid');
-        
+        // Create order in database using controller wrappers
+        $orderController = new OrderController();
+        $orderParams = [
+            'customer_id' => $customer_id,
+            'invoice_no' => $invoice_no,
+            'order_date' => $order_date,
+            'order_status' => 'Paid'
+        ];
+
+        $order_id = $orderController->create_order_ctr($orderParams);
         if (!$order_id) {
             throw new Exception("Failed to create order in database");
         }
-        
         error_log("Order created - ID: $order_id, Invoice: $invoice_no");
-        
+
         // Add order details for each cart item
         foreach ($cart_items as $item) {
-            $detail_result = add_order_details_ctr($order_id, $item['p_id'], $item['qty']);
-            
+            // Determine product id and price fields defensively
+            $productId = $item['p_id'] ?? $item['product_id'] ?? $item['product_id'] ?? null;
+            $qty = isset($item['qty']) ? intval($item['qty']) : (isset($item['quantity']) ? intval($item['quantity']) : 0);
+            $price = isset($item['product_price']) ? floatval($item['product_price']) : (isset($item['price']) ? floatval($item['price']) : 0);
+
+            $detailParams = [
+                'order_id' => $order_id,
+                'product_id' => $productId,
+                'qty' => $qty,
+                'price' => $price
+            ];
+
+            $detail_result = $orderController->add_order_details_ctr($detailParams);
+
             if (!$detail_result) {
-                throw new Exception("Failed to add order details for product: {$item['p_id']}");
+                throw new Exception("Failed to add order details for product: {$productId}");
             }
-            
-            error_log("Order detail added - Product: {$item['p_id']}, Qty: {$item['qty']}");
+
+            error_log("Order detail added - Product: {$productId}, Qty: {$qty}");
         }
-        
-        // Record payment in database
-        $payment_id = record_payment_ctr(
-            $total_amount,
-            $customer_id,
-            $order_id,
-            'GHS',
-            $order_date,
-            'paystack',
-            $reference,
-            $authorization_code,
-            $payment_method
-        );
-        
+
+        // Record payment in database via controller
+        $paymentParams = [
+            'amt' => $total_amount,
+            'customer_id' => $customer_id,
+            'order_id' => $order_id,
+            'currency' => 'GHS',
+            'payment_date' => $order_date
+        ];
+
+        $payment_id = $orderController->record_payment_ctr($paymentParams);
         if (!$payment_id) {
             throw new Exception("Failed to record payment");
         }
-        
         error_log("Payment recorded - ID: $payment_id, Reference: $reference");
-        
-        // Empty the customer's cart
-        $empty_result = empty_cart_ctr($customer_id);
-        
+
+        // Empty the customer's cart using CartController
+        $cartController = new CartController();
+        $empty_result = $cartController->empty_cart_ctr($customer_id);
         if (!$empty_result) {
             throw new Exception("Failed to empty cart");
         }
-        
         error_log("Cart emptied for customer: $customer_id");
         
         // Commit database transaction

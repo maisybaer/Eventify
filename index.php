@@ -67,17 +67,14 @@ $role = getUserRole();
                             </div>
 
                             <!-- Search and Filters -->
-                            <div class="search-tray mb-4">
-                                <i class="fas fa-search text-muted"></i>
+                            <div class="search-tray">
                                 <input type="text" id="searchBox" placeholder="Search events...">
-                                
+                                <button class="btn btn-sm btn-outline-secondary" id="searchBtn">Search</button>
+
                                 <select id="categoryFilter">
-                                    <option value="">All Categories</option>
+                                    <option value="">Filter by Category</option>
                                 </select>
 
-                                <button class="btn btn-sm" id="searchBtn">
-                                    Search
-                                </button>
                             </div>
 
                             <div class="text-center">

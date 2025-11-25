@@ -8,7 +8,7 @@ require_once '../settings/paystack_config.php';
 error_log("=== PAYSTACK INITIALIZE TRANSACTION ===");
 
 // Check if user is logged in
-if (!checkLogin($email, $password)) {
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     echo json_encode([
         'status' => 'error',
         'message' => 'Please login to complete payment'
@@ -51,24 +51,29 @@ try {
     // Generate unique reference
     $customer_id = getUserID();
     $reference = 'EVENTIFY-' . $customer_id . '-' . time();
-    
+
     error_log("Initializing transaction - Customer: $customer_id, Amount: $amount GHS, Email: $customer_email");
-    
-    // Initialize Paystack transaction
+
+    // Store transaction reference in session for verification later
+    $_SESSION['paystack_ref'] = $reference;
+    $_SESSION['paystack_amount'] = $amount;
+    $_SESSION['paystack_timestamp'] = time();
+
+    // Initialize Paystack transaction (live/test real API call)
     $paystack_response = paystack_initialize_transaction($amount, $customer_email, $reference);
-    
+
     if (!$paystack_response) {
         throw new Exception("No response from Paystack API");
     }
-    
+
     if (isset($paystack_response['status']) && $paystack_response['status'] === true) {
         // Store transaction reference in session for verification later
         $_SESSION['paystack_ref'] = $reference;
         $_SESSION['paystack_amount'] = $amount;
         $_SESSION['paystack_timestamp'] = time();
-        
+
         error_log("Paystack transaction initialized successfully - Reference: $reference");
-        
+
         echo json_encode([
             'status' => 'success',
             'authorization_url' => $paystack_response['data']['authorization_url'],
@@ -78,7 +83,7 @@ try {
         ]);
     } else {
         error_log("Paystack API error: " . json_encode($paystack_response));
-        
+
         $error_message = $paystack_response['message'] ?? 'Payment gateway error';
         throw new Exception($error_message);
     }

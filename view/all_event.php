@@ -45,7 +45,7 @@ require_once '../settings/core.php';
 			
 			<a href="../index.php" class="btn btn-sm btn-outline-secondary">Home</a>
 			<a href=" ../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
-            <a href="view/basket.php" class="btn btn-sm btn-outline-secondary">Basket</a>
+            <a href="cart.php" class="btn btn-sm btn-outline-secondary">Cart</a>
 
 		<?php else: ?>
 			<a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
