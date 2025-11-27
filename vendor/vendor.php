@@ -42,6 +42,7 @@ if ($conn) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../settings/styles.css?v=1.1">
+    <link rel="icon" href="../settings/favicon.ico">
     
     <style>
         body { background-color: #f8f9fa; }
@@ -64,15 +65,23 @@ if ($conn) {
 
 <body>
 
-    <header class="menu-tray mb-3">
+    <header>
+    <!-- Navigation -->
+    <div class="menu-tray">
+        
+        <a href="../home.php" class="logo">
+             <div class="logo-icon"><img src="../settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+        </a>
+        
+
         <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../index.php" class="btn btn-sm btn-outline-secondary">Home</a>
-            <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
-            <a href="all_event.php" class="btn btn-sm btn-outline-secondary">Back</a>
+            <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+            <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
-            <a href="../login/login.php" class="btn btn-sm btn-outline-secondary">Login</a>
+            <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
+            <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
         <?php endif; ?>
+    </div>
     </header>
 
     <div class="container" style="padding-top:120px; max-width:900px;">

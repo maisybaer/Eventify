@@ -224,12 +224,23 @@ $my_requests = $bookingClass->getVendorEventRequests($user_id);
 </head>
 
 <body>
-    <header class="menu-tray">
-        <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
-        <a href="../admin/event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> My Events</a>
-        <a href="my_bookings.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-list"></i> Customer Bookings</a>
-        <a href="vendor_requests.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-user-check"></i> Approve Vendors</a>
-        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  <header>
+    <!-- Navigation -->
+        <div class="menu-tray">
+            
+            <a href="../home.php" class="logo">
+                <div class="logo-icon"><img src="../settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+            </a>
+            
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+                <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <?php else: ?>
+                <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
+                <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
+            <?php endif; ?>
+        </div>
     </header>
 
     <div class="container">
@@ -238,11 +249,6 @@ $my_requests = $bookingClass->getVendorEventRequests($user_id);
             <p class="text-muted">View events where you've requested to provide vendor services</p>
         </div>
 
-        <div class="action-buttons">
-            <a href="browse_events_vendor.php" class="action-btn action-btn-primary">
-                <i class="fas fa-calendar-plus"></i> Browse More Events
-            </a>
-        </div>
 
         <?php
         // Calculate stats
@@ -353,5 +359,11 @@ $my_requests = $bookingClass->getVendorEventRequests($user_id);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php
+$footer_base = '../';
+include '../includes/footer.php';
+?>
+
 </body>
 </html>

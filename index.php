@@ -527,7 +527,7 @@ $footer_base = '';
                                     </div>
                                     <h5>My Event Requests</h5>
                                     <p class="text-muted">Track your vendor requests</p>
-                                    <a href="view/vendor_dashboard.php" class="btn btn-custom mt-2">
+                                    <a href="vendor/vendor_dashboard.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>View
                                     </a>
                                 </div>
@@ -542,7 +542,7 @@ $footer_base = '';
                                     </div>
                                     <h5>Your Account</h5>
                                     <p class="text-muted">Manage your vendor account</p>
-                                    <a href="admin/vendor.php" class="btn btn-custom mt-2">
+                                    <a href="vendor/vendor.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>Manage
                                     </a>
                                 </div>

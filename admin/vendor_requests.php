@@ -21,7 +21,7 @@ $vendor_requests = $bookingClass->getEventManagerVendorRequests($user_id);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Requests - Eventify</title>
+    <title>Vendor Requests</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../settings/styles.css?v=<?php echo time(); ?>">
@@ -265,15 +265,23 @@ $vendor_requests = $bookingClass->getEventManagerVendorRequests($user_id);
 </head>
 
 <body>
-    <header class="menu-tray">
-        <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
-        <?php if ($user_role == 2): ?>
-            <a href="../admin/event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> My Events</a>
-        <?php else: ?>
-            <a href="all_event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> Events</a>
-        <?php endif; ?>
-        <a href="my_bookings.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-list"></i> Bookings</a>
-        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  <header>
+    <!-- Navigation -->
+        <div class="menu-tray">
+            
+            <a href="../home.php" class="logo">
+                <div class="logo-icon"><img src="../settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+            </a>
+            
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+                <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <?php else: ?>
+                <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
+                <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
+            <?php endif; ?>
+        </div>
     </header>
 
     <div class="container">
