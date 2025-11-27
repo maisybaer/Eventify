@@ -123,17 +123,17 @@ if ($event_id > 0) {
 
 <body>
 
-    <header class="menu-tray mb-3">
+    <div class="menu-tray">
         <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../index.php" class="btn btn-sm btn-outline-secondary">Home</a>
-            <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
-            <a href="cart.php" class="btn btn-sm btn-outline-secondary">Cart</a>
-            <a href="all_event.php" class="btn btn-sm btn-outline-secondary">Back</a>
+            <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+            <a href="cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>
+            <a href ="all_event.php"><i class="fas fa-arrow-right"></i>Back</a>
+            <a href="login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
-            <a href="../login/login.php" class="btn btn-sm btn-outline-secondary">Login</a>
+            <a href="login/register.php" class="btn btn-sm btn-primary">Register</a>
+            <a href="login/login.php" class="btn btn-sm btn-secondary">Login</a>
         <?php endif; ?>
-    </header>
+    </div>
 
     <div>
         <div class="container" style="padding-top:120px;">

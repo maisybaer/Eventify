@@ -88,46 +88,60 @@ try {
         exit();
     }
     
-    // Ensure we have expected total server-side (calculate from cart if frontend didn't send it)
-    require_once '../controllers/cart_controller.php';
-    $cartController = new CartController();
-    if (!$cart_items || count($cart_items) == 0) {
-        $cart_items = $cartController->get_user_cart_ctr(getUserID());
-    }
+    // Use the amount that was stored during initialization
+    // This ensures we verify against what was actually sent to Paystack
+    $expected_amount = isset($_SESSION['paystack_amount']) ? floatval($_SESSION['paystack_amount']) : 0;
 
-    $calculated_total = 0.00;
-    if ($cart_items && count($cart_items) > 0) {
-        foreach ($cart_items as $ci) {
-            if (isset($ci['subtotal'])) {
-                $calculated_total += floatval($ci['subtotal']);
-            } elseif (isset($ci['product_price']) && isset($ci['qty'])) {
-                $calculated_total += floatval($ci['product_price']) * intval($ci['qty']);
+    error_log("Expected amount from session: $expected_amount GHS, Amount paid: $amount_paid GHS");
+
+    // If no session amount, calculate from cart (fallback)
+    if ($expected_amount <= 0) {
+        require_once '../controllers/cart_controller.php';
+        $cartController = new CartController();
+        if (!$cart_items || count($cart_items) == 0) {
+            $cart_items = $cartController->get_user_cart_ctr(getUserID());
+        }
+
+        $calculated_total = 0.00;
+        if ($cart_items && count($cart_items) > 0) {
+            foreach ($cart_items as $ci) {
+                if (isset($ci['subtotal'])) {
+                    $calculated_total += floatval($ci['subtotal']);
+                } elseif (isset($ci['product_price']) && isset($ci['qty'])) {
+                    $calculated_total += floatval($ci['product_price']) * intval($ci['qty']);
+                }
             }
         }
+
+        // No service fee applied
+        $expected_amount = round($calculated_total, 2);
+        error_log("Calculated expected amount from cart: $expected_amount GHS");
     }
 
-    // Apply transaction fee (15%) to the server calculated subtotal
-    $feeRate = 0.15;
-    $calculated_total_with_fee = round($calculated_total * (1 + $feeRate), 2);
+    // Use the expected amount for verification
+    $total_amount = $expected_amount;
 
-    if ($total_amount <= 0) {
-        $total_amount = $calculated_total_with_fee;
-    }
-
-    error_log("Expected order total (server, with fee): $total_amount GHS (subtotal: $calculated_total, fee: " . number_format($calculated_total_with_fee - $calculated_total, 2) . ")");
-
-    // Verify amount matches (with 1 pesewa tolerance)
-    if (abs($amount_paid - $total_amount) > 0.01) {
-        error_log("Amount mismatch - Expected: $total_amount GHS, Paid: $amount_paid GHS");
+    // Verify amount matches (with 1 pesewa tolerance for rounding)
+    if (abs($amount_paid - $expected_amount) > 0.01) {
+        error_log("Amount mismatch - Expected: $expected_amount GHS, Paid: $amount_paid GHS, Difference: " . abs($amount_paid - $expected_amount));
 
         echo json_encode([
             'status' => 'error',
             'message' => 'Payment amount does not match order total',
             'verified' => false,
-            'expected' => number_format($total_amount, 2),
+            'expected' => number_format($expected_amount, 2),
             'paid' => number_format($amount_paid, 2)
         ]);
         exit();
+    }
+
+    // Get cart items for order creation if not already loaded
+    if (!isset($cartController)) {
+        require_once '../controllers/cart_controller.php';
+        $cartController = new CartController();
+    }
+    if (!$cart_items || count($cart_items) == 0) {
+        $cart_items = $cartController->get_user_cart_ctr(getUserID());
     }
     
     // Payment is verified! Now create the order in our system
@@ -177,25 +191,28 @@ try {
 
         // Add order details for each cart item
         foreach ($cart_items as $item) {
-            // Determine product id and price fields defensively
-            $productId = $item['p_id'] ?? $item['product_id'] ?? $item['product_id'] ?? null;
+            // Get event_id from cart item
+            $eventId = $item['event_id'] ?? $item['p_id'] ?? $item['product_id'] ?? null;
             $qty = isset($item['qty']) ? intval($item['qty']) : (isset($item['quantity']) ? intval($item['quantity']) : 0);
-            $price = isset($item['product_price']) ? floatval($item['product_price']) : (isset($item['price']) ? floatval($item['price']) : 0);
+
+            if (!$eventId) {
+                error_log("Warning: Cart item missing event_id: " . json_encode($item));
+                continue; // Skip items without event_id
+            }
 
             $detailParams = [
                 'order_id' => $order_id,
-                'product_id' => $productId,
-                'qty' => $qty,
-                'price' => $price
+                'product_id' => $eventId,  // Controller expects 'product_id' but it's actually event_id
+                'qty' => $qty
             ];
 
             $detail_result = $orderController->add_order_details_ctr($detailParams);
 
             if (!$detail_result) {
-                throw new Exception("Failed to add order details for product: {$productId}");
+                throw new Exception("Failed to add order details for event: {$eventId}");
             }
 
-            error_log("Order detail added - Product: {$productId}, Qty: {$qty}");
+            error_log("Order detail added - Event: {$eventId}, Qty: {$qty}");
         }
 
         // Record payment in database via controller

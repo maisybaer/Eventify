@@ -90,19 +90,24 @@ $allCat = get_all_cat_ctr();
 </head>
 
 <body>
+    <header>
     <!-- Navigation -->
-    <div class="menu-tray">
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../index.php"><i class="fas fa-home"></i> Home</a>
-            <a href="category.php"><i class="fas fa-layer-group"></i> Categories</a>
-            <a href="../view/browse_vendors.php"><i class="fas fa-users"></i> Browse Vendors</a>
-            <a href="../view/my_vendor_bookings.php"><i class="fas fa-clipboard-list"></i> My Bookings</a>
-            <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        <?php else: ?>
-            <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
-            <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
-        <?php endif; ?>
-    </div>
+        <div class="menu-tray">
+            
+            <a href="../home.php" class="logo">
+                <div class="logo-icon"><img src="../settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+            </a>
+            
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+                <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <?php else: ?>
+                <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
+                <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
+            <?php endif; ?>
+        </div>
+    </header>
 
     <div class="container header-container">
         <!-- Header -->

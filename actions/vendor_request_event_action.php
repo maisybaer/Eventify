@@ -35,7 +35,8 @@ try {
 
     // Get event details to find the event creator (customer_id)
     require_once '../controllers/event_controller.php';
-    $event = viewSingleEvent_ctr($event_id);
+    // controller function is named view_single_event_ctr
+    $event = view_single_event_ctr($event_id);
 
     if (!$event) {
         echo json_encode(['status' => 'error', 'message' => 'Event not found']);

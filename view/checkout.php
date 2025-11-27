@@ -12,198 +12,514 @@ $user_id = $_SESSION['user_id'];
 $cartController = new CartController();
 $cart_items = $cartController->get_user_cart_ctr($user_id);
 
-// Calculate total
-$cart_total = 0;
-if (!empty($cart_items)) {
-    foreach ($cart_items as $item) {
-        $cart_total += $item['qty'] * $item['product_price'];
+// Get user information
+require_once '../settings/db_class.php';
+$db = new db_connection();
+$conn = $db->db_conn();
+$user_info = null;
+if ($conn) {
+    $uid = (int) $user_id;
+    $sql = "SELECT customer_name, customer_email, customer_contact FROM eventify_customer WHERE customer_id = $uid LIMIT 1";
+    $res = mysqli_query($conn, $sql);
+    if ($res) {
+        $user_info = mysqli_fetch_assoc($res);
     }
 }
+
+// Calculate subtotal and total with service fee
+$cart_subtotal = 0;
+if (!empty($cart_items)) {
+    foreach ($cart_items as $item) {
+        $cart_subtotal += $item['qty'] * $item['product_price'];
+    }
+}
+// No service fee - customer pays only the subtotal
+$service_fee = 0;
+$cart_total = $cart_subtotal;
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Checkout</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Eventify</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../settings/styles.css">
+    <link rel="stylesheet" href="../settings/styles.css?v=<?php echo time(); ?>">
     <style>
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+
         .checkout-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 100px auto 50px;
             padding: 24px;
         }
-        .checkout-summary {
-            background: #fff;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: var(--card-shadow);
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
         }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 992px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkout-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title i {
+            color: #f97316;
+        }
+
+        .user-info-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .user-info-table tr:not(:last-child) td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .user-info-table td {
+            padding: 1rem 0.75rem;
+        }
+
+        .user-info-table td:first-child {
+            font-weight: 600;
+            color: #4b5563;
+            width: 140px;
+        }
+
+        .user-info-table td:last-child {
+            color: #1f2937;
+        }
+
+        .user-info-table i {
+            color: #f97316;
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+
         .summary-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
         }
-        .summary-total {
-            font-size: 1.5rem;
+
+        .summary-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-qty {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .item-price {
             font-weight: 700;
-            color: var(--brand);
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 2px solid var(--brand-light);
+            color: #f97316;
+            font-size: 1.1rem;
         }
+
+        .subtotal-row, .fee-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            color: #4b5563;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .fee-row {
+            color: #059669;
+        }
+
+        .fee-row small {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 3px solid #f97316;
+        }
+
+        .summary-total .amount {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+        }
+
+        .btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-checkout:active {
+            transform: translateY(0);
+        }
+
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 2000;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(3px);
+            z-index: 99999 !important;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
             padding: 24px;
         }
+
         .modal.active {
             display: flex;
         }
-        .modal-content {
-            background: #fff;
-            padding: 28px;
-            border-radius: 14px;
-            max-width: 620px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 12px 40px rgba(2,6,23,0.25);
+
+        /* Ensure menu and footer stay behind modal */
+        .menu-tray {
+            z-index: 100 !important;
+        }
+
+        footer {
+            z-index: 1 !important;
             position: relative;
         }
+
+        header {
+            z-index: 100 !important;
+        }
+
+        /* Hide menu and footer when modal is active */
+        body.modal-open .menu-tray,
+        body.modal-open header,
+        body.modal-open footer {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
         .modal-close {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            font-size: 22px;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
             color: #6b7280;
             cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
         }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
         .modal-title {
-            font-size: 20px;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 1rem;
+            color: #1f2937;
         }
+
+        .payment-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+        }
+
+        .payment-breakdown {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .secure-badge {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin: 1.5rem 0;
+        }
+
+        .secure-badge i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
         .modal-buttons {
             display: flex;
-            gap: 12px;
-            margin-top: 22px;
-            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
+
         .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
+            flex: 1;
+            padding: 0.875rem 1.5rem;
+            border-radius: 50px;
             font-weight: 600;
             border: none;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
+
         .btn-primary {
-            background: #0ea5a4;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: white;
         }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+
         .btn-secondary {
             background: #f3f4f6;
             color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-cart i {
+            font-size: 5rem;
+            color: #cbd5e0;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 
 <body>
-    <header class="menu-tray mb-3">
-        <a href="../index.php" class="btn btn-sm btn-outline-secondary">Home</a>
-        <a href="cart.php" class="btn btn-sm btn-outline-secondary">Back to Cart</a>
-        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
+    <header class="menu-tray">
+        <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
+        <a href="cart.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back to Cart</a>
+        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </header>
 
     <main>
         <div class="checkout-container">
-            <h1 class="text-center mb-4">Checkout</h1>
-            
-            <div class="checkout-summary">
-            <h4 class="text-center mb-4">Enter your shipping information</h4>
-            <form>
-            <table>
-                <tr>
-                    <td><label for="name">First Name:</label></td>
-                    <td><input type="text" id="name" name="name" required></td>
-                </tr>
-                <tr>
-                    <td><label for="name">Last Name:</label></td>
-                    <td><input type="text" id="name" name="name" required></td>
-                </tr>
-                <tr>
-                    <td><label for="customer_email">Email:</label></td>
-                    <td><input type="email" id="customer_email" name="customer_email" required value="<?= htmlspecialchars(getUserEmail()) ?>"></td>
-                </tr>
-                <tr>
-                    <td><label for="address">Address Line 1:</label></td>
-                    <td><input type="text" id="address" name="address" required></td>
-                </tr>
-                <tr>
-                    <td><label for="address">Address Line 2:</label></td>
-                    <td><input type="text" id="address" name="address" required></td>
-                </tr>
-            </table>
-        </form>
-        </div><br>
+            <div class="page-header">
+                <h1><i class="fas fa-credit-card"></i> Checkout</h1>
+                <p>Review your order and complete payment</p>
+            </div>
 
             <?php if (!empty($cart_items)): ?>
-                <div class="checkout-summary">
-                    <h3 class="mb-4">Order Summary</h3>
-                    
-                    <?php foreach ($cart_items as $item): ?>
-                        <div class="summary-item">
-                            <div>
-                                <strong><?= htmlspecialchars($item['product_title']); ?></strong>
-                                <span class="text-muted"> × <?= $item['qty']; ?></span>
-                            </div>
-                            <div>$<?= number_format($item['product_price'] * $item['qty'], 2); ?></div>
-                        </div>
-                    <?php endforeach; ?>
+                <div class="checkout-grid">
+                    <!-- User Information Card -->
+                    <div class="checkout-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-user-circle"></i>
+                            Your Information
+                        </h3>
 
-                    <div class="summary-total">
-                        <div class="d-flex justify-content-between">
-                            <span>Total:</span>
-                            <span id="checkoutTotal">$<?= number_format($cart_total, 2); ?></span>
-                        </div>
+                        <table class="user-info-table">
+                            <tr>
+                                <td><i class="fas fa-user"></i><strong>Name</strong></td>
+                                <td><?= htmlspecialchars($user_info['customer_name'] ?? 'N/A'); ?></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-envelope"></i><strong>Email</strong></td>
+                                <td>
+                                    <input type="email" id="customer_email" name="customer_email"
+                                           value="<?= htmlspecialchars($user_info['customer_email'] ?? ''); ?>"
+                                           style="border: none; background: transparent; width: 100%; font-size: inherit; color: inherit;"
+                                           required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-phone"></i><strong>Phone</strong></td>
+                                <td><?= htmlspecialchars($user_info['customer_contact'] ?? 'Not set'); ?></td>
+                            </tr>
+                        </table>
                     </div>
 
-                    <div class="text-center mt-4">
-                         <button onclick="showPaymentModal()" class="btn btn-primary">💳 Proceed to Payment</button>
+                    <!-- Order Summary Card -->
+                    <div class="checkout-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-shopping-bag"></i>
+                            Order Summary
+                        </h3>
+
+                        <?php foreach ($cart_items as $item): ?>
+                            <div class="summary-item">
+                                <div class="item-details">
+                                    <div class="item-title"><?= htmlspecialchars($item['product_title']); ?></div>
+                                    <div class="item-qty">Qty: <?= $item['qty']; ?> × GHS <?= number_format($item['product_price'], 2); ?></div>
+                                </div>
+                                <div class="item-price">
+                                    GHS <?= number_format($item['product_price'] * $item['qty'], 2); ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <div class="subtotal-row">
+                            <div><strong>Subtotal</strong></div>
+                            <div><strong>GHS <?= number_format($cart_subtotal, 2); ?></strong></div>
+                        </div>
+
+                        <div class="fee-row">
+                            <div>
+                                <strong>Service Fee (15%)</strong>
+                                <small>Processing and platform fee</small>
+                            </div>
+                            <div><strong>GHS <?= number_format($service_fee, 2); ?></strong></div>
+                        </div>
+
+                        <div class="summary-total">
+                            <div>Total</div>
+                            <div class="amount" id="checkoutTotal">GHS <?= number_format($cart_total, 2); ?></div>
+                        </div>
+
+                        <button onclick="showPaymentModal()" class="btn-checkout">
+                            <i class="fas fa-lock"></i> Proceed to Secure Payment
+                        </button>
                     </div>
                 </div>
 
-                <!-- Payment Modal (Paystack) -->
+                <!-- Payment Modal -->
                 <div id="paymentModal" class="modal" aria-hidden="true">
                     <div class="modal-content">
-                        <span class="modal-close" onclick="closePaymentModal()">&times;</span>
-                        <h2 class="modal-title">Secure Payment via Paystack</h2>
+                        <span class="modal-close" onclick="closePaymentModal()">×</span>
+                        <h2 class="modal-title"><i class="fas fa-shield-alt"></i> Secure Payment</h2>
 
-                        <div style="text-align: center; margin: 18px 0 8px;">
-                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px;">Amount to Pay</div>
-                            <div id="paymentAmount" style="font-size: 32px; font-weight: 700; color: #dc2626;">$<?= number_format($cart_total, 2); ?></div>
-                            <div id="paymentBreakdown" style="margin-top:10px; font-size:14px; color:#f3f4f6;"></div>
+                        <div class="payment-amount" id="paymentAmount">
+                            GHS <?= number_format($cart_total, 2); ?>
                         </div>
 
-                        <div style="background: linear-gradient(135deg, #111827 0%, #374151 100%); color: white; padding: 16px; border-radius: 12px; margin: 18px 0; box-shadow: 0 6px 18px rgba(2,6,23,0.2);">
-                            <div style="font-size: 12px; opacity: 0.85;">SECURED PAYMENT</div>
-                            <div style="font-size: 16px; font-weight: 700; margin-top: 6px;">🔒 Pay with Paystack</div>
-                            <div style="font-size: 12px; opacity: 0.85; margin-top: 8px;">You will be redirected to Paystack's secure gateway to complete payment.</div>
+                        <div class="payment-breakdown" id="paymentBreakdown">
+                            Subtotal: GHS <?= number_format($cart_subtotal, 2); ?> + Service Fee (15%): GHS <?= number_format($service_fee, 2); ?>
                         </div>
 
-                        <p style="text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 14px;">Please confirm to continue to payment.</p>
+                        <div class="secure-badge">
+                            <i class="fas fa-lock"></i>
+                            <div style="font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem;">Pay with Paystack</div>
+                            <div style="font-size: 0.875rem; opacity: 0.85; margin-top: 0.5rem;">
+                                You'll be redirected to Paystack's secure payment gateway
+                            </div>
+                        </div>
+
+                        <p style="color: #6b7280; font-size: 0.875rem;">
+                            <i class="fas fa-info-circle"></i> Your payment information is encrypted and secure
+                        </p>
 
                         <div class="modal-buttons">
-                            <button class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
-                            <button id="confirmPaymentBtn" onclick="processCheckout()" class="btn btn-primary">💳 Pay Now</button>
+                            <button class="btn btn-secondary" onclick="closePaymentModal()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                            <button id="confirmPaymentBtn" onclick="processCheckout()" class="btn btn-primary">
+                                <i class="fas fa-credit-card"></i> Pay Now
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -211,45 +527,52 @@ if (!empty($cart_items)) {
                 <!-- Success Modal -->
                 <div id="successModal" class="modal" aria-hidden="true">
                     <div class="modal-content">
-                        <h2 class="modal-title">🎉 Order Successful!</h2>
+                        <h2 class="modal-title"><i class="fas fa-check-circle" style="color: #059669;"></i> Payment Successful!</h2>
 
-                        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 16px; border-radius: 12px; margin: 12px 0; border: 1px solid #6ee7b7;">
-                            <div style="text-align: center; margin-bottom: 10px;">
-                                <div style="font-size: 12px; color: #065f46; margin-bottom: 4px;">Invoice Number</div>
-                                <div id="successInvoice" style="font-size: 18px; font-weight: 700; color: #047857;"></div>
+                        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 1.5rem; border-radius: 16px; margin: 1.5rem 0; border: 2px solid #6ee7b7;">
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-size: 0.875rem; color: #065f46; margin-bottom: 0.5rem;">Invoice Number</div>
+                                <div id="successInvoice" style="font-size: 1.5rem; font-weight: 700; color: #047857;"></div>
                             </div>
-                            <div style="border-top: 1px solid rgba(6, 95, 70, 0.12); padding-top: 12px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #065f46;">
+                            <div style="border-top: 1px solid rgba(6, 95, 70, 0.2); padding-top: 1rem; text-align: left;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #065f46;">
                                     <span>Total Paid:</span>
-                                    <span id="successAmount" style="font-weight: 600;"></span>
+                                    <span id="successAmount" style="font-weight: 700;"></span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #065f46;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #065f46;">
                                     <span>Date:</span>
                                     <span id="successDate"></span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #065f46;">
+                                <div style="display: flex; justify-content: space-between; color: #065f46;">
                                     <span>Items:</span>
                                     <span id="successItems"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <p style="text-align: center; color: #6b7280; margin-bottom: 16px;">Thank you for your order! A receipt has been sent to your email.</p>
+                        <p style="color: #6b7280;">Thank you for your order! A receipt has been sent to your email.</p>
 
                         <div class="modal-buttons">
-                            <button onclick="continueShopping()" class="btn btn-secondary">Continue Shopping</button>
-                            <button onclick="viewOrders()" class="btn btn-primary">View Orders</button>
+                            <button onclick="continueShopping()" class="btn btn-secondary">
+                                <i class="fas fa-shopping-bag"></i> Continue Shopping
+                            </button>
+                            <button onclick="viewOrders()" class="btn btn-primary">
+                                <i class="fas fa-receipt"></i> View Orders
+                            </button>
                         </div>
                     </div>
                 </div>
 
             <?php else: ?>
-                <div class="text-center">
-                    <p class="text-muted">Your cart is empty. <a href="all_product.php">Continue shopping</a>.</p>
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h2>Your cart is empty</h2>
+                    <p class="text-muted">Add some items to your cart to proceed to checkout</p>
+                    <a href="all_event.php" class="btn-checkout" style="display: inline-block; width: auto; margin-top: 1rem;">
+                        <i class="fas fa-calendar"></i> Browse Events
+                    </a>
                 </div>
             <?php endif; ?>
-
-            <div id="checkoutMessage" class="mt-4"></div>
         </div>
     </main>
 

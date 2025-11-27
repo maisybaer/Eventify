@@ -340,11 +340,17 @@ if (!empty($cart_items)) {
 
 <body>
     <!-- Navigation -->
-    <header class="menu-tray">
-        <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
-        <a href="all_event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> Events</a>
-        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
-    </header>
+   <div class="menu-tray">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+            <a href="cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>
+            <a href ="all_event.php"><i class="fas fa-arrow-right"></i>Back</a>
+            <a href="login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <?php else: ?>
+            <a href="login/register.php" class="btn btn-sm btn-primary">Register</a>
+            <a href="login/login.php" class="btn btn-sm btn-secondary">Login</a>
+        <?php endif; ?>
+    </div>
 
     <main class="cart-container">
         <!-- Header -->

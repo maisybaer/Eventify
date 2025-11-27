@@ -47,7 +47,7 @@ $topEvents = $db->db_fetch_all($topEventsQuery);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders & Analytics - Eventify</title>
+    <title>Analytics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../settings/styles.css?v=<?php echo time(); ?>">
@@ -197,13 +197,17 @@ $topEvents = $db->db_fetch_all($topEventsQuery);
 </head>
 
 <body>
-    <header>
-        <!-- Navigation -->
+  <header>
+    <!-- Navigation -->
         <div class="menu-tray">
+            
+            <a href="../home.php" class="logo">
+                <div class="logo-icon"><img src="../settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+            </a>
+            
+
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="../index.php"><i class="fas fa-home"></i> Home</a>
-                <a href="event.php"><i class="fas fa-calendar"></i> My Events</a>
-                <a href="../view/browse_vendors.php"><i class="fas fa-users"></i> Browse Vendors</a>
                 <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             <?php else: ?>
                 <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
@@ -217,7 +221,7 @@ $topEvents = $db->db_fetch_all($topEventsQuery);
             <span class="badge mb-3">
                 <a href="../home.php"><img src="../settings/logo.png" alt="eventify logo" style="width:80px; height:80px; margin-right:8px;"></a>
             </span>
-            <h1 class="mb-2"><i class="fas fa-chart-line"></i> Orders & Analytics</h1>
+            <h1 class="mb-2"><i class="fas fa-chart-line"></i> Analytics</h1>
             <p class="text-muted">Track sales and revenue for your events</p>
         </div>
 
@@ -282,33 +286,8 @@ $topEvents = $db->db_fetch_all($topEventsQuery);
         </div>
         <?php endif; ?>
 
-        <!-- Orders Table -->
-        <div class="table-container slide-up">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0"><i class="fas fa-list"></i> Recent Orders</h3>
-                <input type="text" id="searchOrders" class="form-control" placeholder="Search orders..." style="max-width:300px;">
-            </div>
+        
 
-            <div class="table-responsive">
-                <table class="table table-hover" id="orderTable">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Invoice No</th>
-                            <th>Customer ID</th>
-                            <th>Items</th>
-                            <th>Total Price</th>
-                            <th>Order Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="8" class="text-center">Loading orders...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <script>

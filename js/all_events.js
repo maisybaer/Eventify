@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="text-muted">${category}</p>
                         ${formattedDate ? `<p class="event-date"><i class="fas fa-calendar"></i> ${formattedDate}</p>` : ''}
                         ${eventLocation ? `<p class="event-location"><i class="fas fa-map-marker-alt"></i> ${eventLocation}</p>` : ''}
-                        <p class="event-price">$${price !== '' ? price : '0'}</p>
+                        <p class="event-price">GHS ${price !== '' ? price : '0'}</p>
                         <a href="single_event.php?event_id=${encodeURIComponent(eventId)}" class="btn btn-custom mt-2">View</a>
                     </div>
                 </div>

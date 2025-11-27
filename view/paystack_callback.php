@@ -31,36 +31,132 @@ error_log("Reference from URL: $reference");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processing Payment - Aya Crafts</title>
+    <title>Processing Payment - Eventify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        
-        .container { max-width: 500px; width: 90%; background: white; padding: 60px 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); text-align: center; }
-        
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
         .spinner {
             display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #dc2626;
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f4f6;
+            border-top: 5px solid #f97316;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 30px;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 2rem;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: #1a1a1a; margin-bottom: 15px; }
-        p { color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
-        
-        .reference { background: #f9fafb; padding: 15px; border-radius: 8px; margin: 25px 0; word-break: break-all; font-family: monospace; font-size: 12px; color: #6b7280; }
-        
-        .error { color: #dc2626; background: #fee2e2; border: 2px solid #fecaca; padding: 15px; border-radius: 8px; margin: 20px 0; display: none; }
-        .success { color: #065f46; background: #d1fae5; border: 2px solid #6ee7b7; padding: 15px; border-radius: 8px; margin: 20px 0; display: none; }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #6b7280;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .reference {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #92400e;
+            border: 2px solid #fbbf24;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+        }
+
+        .reference strong {
+            color: #78350f;
+            font-weight: 700;
+        }
+
+        .error {
+            color: #991b1b;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid #f87171;
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            display: none;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        .success {
+            color: #065f46;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #34d399;
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            display: none;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.15);
+        }
+
+        .icon-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        .check-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-radius: 50%;
+            color: #059669;
+            font-size: 2rem;
+        }
+
+        .error-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-radius: 50%;
+            color: #dc2626;
+            font-size: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -115,12 +211,22 @@ error_log("Reference from URL: $reference");
                 
                 if (data.status === 'success' && data.verified) {
                     // Payment verified successfully
+                    // Show success icon
+                    const iconWrapper = document.createElement('div');
+                    iconWrapper.className = 'icon-wrapper';
+                    iconWrapper.innerHTML = '<div class="check-icon"><i class="fas fa-check"></i></div>';
+                    document.querySelector('.container').insertBefore(iconWrapper, document.querySelector('h1'));
+
+                    // Update heading
+                    document.querySelector('h1').textContent = 'Payment Successful!';
+                    document.querySelector('p').textContent = 'Your payment has been verified. Redirecting...';
+
                     document.getElementById('successBox').style.display = 'block';
 
-                        // Redirect to success page in the current window
-                        setTimeout(() => {
-                            window.location.replace(`payment_success.php?reference=${encodeURIComponent(reference)}&invoice=${encodeURIComponent(data.invoice_no)}`);
-                        }, 500);
+                    // Redirect to success page in the current window
+                    setTimeout(() => {
+                        window.location.replace(`payment_success.php?reference=${encodeURIComponent(reference)}&invoice=${encodeURIComponent(data.invoice_no)}`);
+                    }, 1000);
 
                 } else {
                     // Payment verification failed
@@ -148,6 +254,19 @@ error_log("Reference from URL: $reference");
          * Show error message
          */
         function showError(message) {
+            // Hide spinner
+            document.getElementById('spinner').style.display = 'none';
+
+            // Show error icon
+            const iconWrapper = document.createElement('div');
+            iconWrapper.className = 'icon-wrapper';
+            iconWrapper.innerHTML = '<div class="error-icon"><i class="fas fa-times"></i></div>';
+            document.querySelector('.container').insertBefore(iconWrapper, document.querySelector('h1'));
+
+            // Update heading
+            document.querySelector('h1').textContent = 'Payment Failed';
+
+            // Show error message
             document.getElementById('errorBox').style.display = 'block';
             document.getElementById('errorMessage').textContent = message;
         }

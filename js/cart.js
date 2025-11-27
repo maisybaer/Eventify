@@ -100,7 +100,7 @@ $(document).ready(function() {
                     success: function(response) {
                         if (response.status === 'success') {
                             // Remove the row from table
-                            $(`tr[data-product-id="${productId}"]`).fadeOut(300, function() {
+                            $(`tr[data-event-id="${productId}"]`).fadeOut(300, function() {
                                 $(this).remove();
                                 updateCartDisplay();
                                 checkEmptyCart();
@@ -172,15 +172,15 @@ $(document).ready(function() {
         let total = 0;
         $('#cartItems tr').each(function() {
             const qty = parseInt($(this).find('.qty-input').val());
-            const priceText = $(this).find('td:eq(2)').text().replace('$', '');
+            const priceText = $(this).find('.price-cell').text().replace('GHS', '').replace(/,/g, '').trim();
             const price = parseFloat(priceText);
             const subtotal = qty * price;
-            
-            $(this).find('.subtotal').text('$' + subtotal.toFixed(2));
+
+            $(this).find('.subtotal-cell').text('GHS ' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             total += subtotal;
         });
-        
-        $('#cartTotal').text('$' + total.toFixed(2));
+
+        $('#cartTotal').text('GHS ' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
     }
 
     // Function to check if cart is empty

@@ -1,5 +1,9 @@
 <!-- Navigation Menu -->
+<?php $header_base = isset($header_base) ? $header_base : '../'; ?>
 <div class="menu-tray">
+    <a href="<?php echo $header_base; ?>home.php" class="menu-logo">
+        <img src="<?php echo $header_base; ?>settings/logo.png" alt="Eventify" style="width:44px;height:44px;object-fit:contain;vertical-align:middle;">
+    </a>
     <?php if (isset($_SESSION['user_id'])): ?>
         <?php
         $user_role = getUserRole();
@@ -76,8 +80,9 @@
         z-index: 1200;
         backdrop-filter: blur(10px);
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
     }
 
     .menu-tray a {
@@ -88,6 +93,17 @@
         text-decoration: none;
         font-size: 0.875rem;
         white-space: nowrap;
+    }
+
+    .menu-tray .menu-logo {
+        margin-right: auto;
+        padding: 4px 8px;
+        background: transparent;
+    }
+
+    .menu-tray .menu-logo img {
+        display: block;
+        border-radius: 8px;
     }
 
     .menu-tray a:hover {

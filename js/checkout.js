@@ -110,40 +110,35 @@ function showPaymentModal() {
     const modal = document.getElementById('paymentModal');
     const amountDisplay = document.getElementById('paymentAmount');
     const breakdownEl = document.getElementById('paymentBreakdown');
-    // Compute a numeric base total robustly and avoid global name collisions.
-    let baseTotal = 0;
-    // Prefer internal numeric storage if set
-    if (typeof window._checkoutBaseTotalNumber === 'number' && !isNaN(window._checkoutBaseTotalNumber)) {
-        baseTotal = window._checkoutBaseTotalNumber;
-    } else if (window.checkoutTotal && !isNaN(parseFloat(window.checkoutTotal))) {
-        baseTotal = parseFloat(window.checkoutTotal);
+
+    // Prevent body scroll
+    document.body.classList.add('modal-open');
+
+    // Get the total from the checkout page (this is the FINAL total including fee)
+    let finalTotal = 0;
+    if (window.checkoutTotal && !isNaN(parseFloat(window.checkoutTotal))) {
+        finalTotal = parseFloat(window.checkoutTotal);
     } else {
         const totalEl = document.getElementById('checkoutTotal');
         if (totalEl) {
             const txt = (totalEl.textContent || totalEl.innerText || '');
             const num = txt.replace(/[^0-9\.\,]/g, '').replace(/,/g, '');
-            baseTotal = parseFloat(num) || 0;
+            finalTotal = parseFloat(num) || 0;
         }
     }
 
-    // Apply 15% transaction fee and compute fee amount
-    const feeRate = 0.15;
-    const feeAmount = +(baseTotal * feeRate).toFixed(2);
-    const totalWithFee = +(baseTotal + feeAmount).toFixed(2);
+    // Cache the final total to send to Paystack
+    window._checkoutTotalWithFeeNumber = finalTotal;
 
-    // Cache numeric totals on window with unlikely-to-conflict names
-    window._checkoutBaseTotalNumber = baseTotal;
-    window._checkoutFeeAmount = feeAmount;
-    window._checkoutTotalWithFeeNumber = totalWithFee;
-
-    // Display the fee-inclusive total and the breakdown
-    amountDisplay.textContent = `GHS ${totalWithFee.toFixed(2)}`;
+    // Display the total amount
+    amountDisplay.textContent = `GHS ${finalTotal.toFixed(2)}`;
     if (breakdownEl) {
-        breakdownEl.innerHTML = `<div style="color:#e5e7eb;">Subtotal: GHS ${baseTotal.toFixed(2)} &middot; Fee (15%): GHS ${feeAmount.toFixed(2)}</div>`;
+        breakdownEl.innerHTML = `<div style="color:#e5e7eb;">Total amount for your order</div>`;
     }
-    
+
     modal.style.display = 'flex';
-    
+    modal.classList.add('active');
+
     // Add animation
     setTimeout(() => {
         modal.style.opacity = '1';
@@ -159,13 +154,18 @@ function showPaymentModal() {
  */
 function closePaymentModal() {
     const modal = document.getElementById('paymentModal');
+
+    // Re-enable body scroll
+    document.body.classList.remove('modal-open');
+
     modal.style.opacity = '0';
-    
+    modal.classList.remove('active');
+
     const modalContent = modal.querySelector('.modal-content');
     if (modalContent) {
         modalContent.style.transform = 'scale(0.9)';
     }
-    
+
     setTimeout(() => {
         modal.style.display = 'none';
     }, 300);
@@ -260,15 +260,19 @@ function processCheckout() {
  */
 function showSuccessModal(orderData) {
     const modal = document.getElementById('successModal');
-    
+
+    // Prevent body scroll
+    document.body.classList.add('modal-open');
+
     // Populate success modal with order details
     document.getElementById('successInvoice').textContent = orderData.invoice_no;
     document.getElementById('successAmount').textContent = `GHS ${orderData.total_amount}`;
     document.getElementById('successDate').textContent = orderData.order_date;
     document.getElementById('successItems').textContent = orderData.item_count;
-    
+
     modal.style.display = 'flex';
-    
+    modal.classList.add('active');
+
     // Add animation
     setTimeout(() => {
         modal.style.opacity = '1';
@@ -277,10 +281,10 @@ function showSuccessModal(orderData) {
             modalContent.style.transform = 'scale(1)';
         }
     }, 10);
-    
+
     // Update cart count
     updateCartCount(0);
-    
+
     // Confetti effect (optional)
     createConfetti();
 }
@@ -416,7 +420,12 @@ function escapeHtml(text) {
 // Close modals when clicking outside
 window.onclick = function(event) {
     const paymentModal = document.getElementById('paymentModal');
+    const successModal = document.getElementById('successModal');
+
     if (event.target === paymentModal) {
         closePaymentModal();
     }
+
+    // Don't allow closing success modal by clicking outside
+    // User must click a button to proceed
 };

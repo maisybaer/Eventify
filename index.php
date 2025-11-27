@@ -389,7 +389,7 @@ $footer_base = '';
                                     <div class="mb-3" style="font-size: 3rem;">
                                         <i class="fas fa-calendar-alt"></i>
                                     </div>
-                                    <h5>Events</h5>
+                                    <h5>My Events</h5>
                                     <p class="text-muted">Manage your events</p>
                                     <a href="admin/event.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>Manage
@@ -414,38 +414,93 @@ $footer_base = '';
                             </div>
                         </div>
 
-                        <!-- Orders Card -->
+                        <!-- Sales Card -->
                         <div class="product-card">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <div class="mb-3" style="font-size: 3rem;">
                                         <i class="fas fa-shopping-bag"></i>
                                     </div>
-                                    <h5>Orders & Analytics</h5>
-                                    <p class="text-muted">Track ticket sales</p>
-                                    <a href="admin/order.php" class="btn btn-custom mt-2">
+                                    <h5>Sales</h5>
+                                    <p class="text-muted">View your ticket sales</p>
+                                    <a href="admin/sales.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>View
                                     </a>
                                 </div>
                             </div>
                         </div>
 
-                    <?php elseif ($role == 2) : ?>
-                        <!-- My Events Card -->
+                        <!-- Analytics Card -->
                         <div class="product-card">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <div class="mb-3" style="font-size: 3rem;">
-                                        <i class="fas fa-calendar"></i>
+                                        <i class="fas fa-chart-line"></i>
                                     </div>
-                                    <h5>My Events</h5>
-                                    <p class="text-muted">Manage your events</p>
-                                    <a href="admin/event.php" class="btn btn-custom mt-2">
+                                    <h5>Analytics</h5>
+                                    <p class="text-muted">Track your business performance</p>
+                                    <a href="admin/analytics.php" class="btn btn-custom mt-2">
+                                        <i class="fas fa-arrow-right me-2"></i>View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
+            <!-- ============= VENDOR MANAGEMENT SECTION ============= -->
+            <div class="vendor-section">
+                <div class="section-divider">
+                    <h2><i class="fas fa-users"></i> Vendor Management</h2>
+                    <p>Connect with vendors and manage bookings</p>
+                </div>
+
+                <!-- Search Vendors Banner -->
+                <div class="vendor-banner">
+                    <div class="vendor-banner-content">
+                        <h3><i class="fas fa-search"></i> Find the Perfect Vendor</h3>
+                        <p>Browse through our curated list of professional vendors for your events</p>
+                        <a href="view/<?php echo ($role == 1) ? 'all_vendor.php' : 'browse_vendors.php'; ?>" class="btn">
+                            <i class="fas fa-users"></i> Browse All Vendors
+                        </a>
+                    </div>
+                </div>
+
+                <div class="product-grid">
+                
+                        <!-- My Bookings Card -->
+                        <div class="product-card">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3" style="font-size: 3rem;">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <h5>My Bookings</h5>
+                                    <p class="text-muted">View your vendor bookings</p>
+                                    <a href="view/my_bookings.php" class="btn btn-custom mt-2">
+                                        <i class="fas fa-arrow-right me-2"></i>View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vendor Requests Card -->
+                        <div class="product-card">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3" style="font-size: 3rem;">
+                                        <i class="fas fa-user-check"></i>
+                                    </div>
+                                    <h5>Vendor Requests</h5>
+                                    <p class="text-muted">Approve vendors for your events</p>
+                                    <a href="admin/vendor_requests.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>Manage
                                     </a>
                                 </div>
                             </div>
                         </div>
+
+                    <?php elseif ($role == 2) : ?>
 
                         <!-- Browse Events Card -->
                         <div class="product-card">
@@ -479,124 +534,27 @@ $footer_base = '';
                             </div>
                         </div>
 
-                        <!-- Orders Card -->
-                        <div class="product-card">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <div class="mb-3" style="font-size: 3rem;">
-                                        <i class="fas fa-shopping-bag"></i>
-                                    </div>
-                                    <h5>Orders & Analytics</h5>
-                                    <p class="text-muted">Track ticket sales</p>
-                                    <a href="admin/order.php" class="btn btn-custom mt-2">
-                                        <i class="fas fa-arrow-right me-2"></i>View
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- ============= VENDOR MANAGEMENT SECTION ============= -->
-            <div class="vendor-section">
-                <div class="section-divider">
-                    <h2><i class="fas fa-users"></i> Vendor Management</h2>
-                    <p>Connect with vendors and manage bookings</p>
-                </div>
-
-                <!-- Search Vendors Banner -->
-                <div class="vendor-banner">
-                    <div class="vendor-banner-content">
-                        <h3><i class="fas fa-search"></i> Find the Perfect Vendor</h3>
-                        <p>Browse through our curated list of professional vendors for your events</p>
-                        <a href="view/<?php echo ($role == 1) ? 'all_vendor.php' : 'browse_vendors.php'; ?>" class="btn">
-                            <i class="fas fa-users"></i> Browse All Vendors
-                        </a>
-                    </div>
-                </div>
-
-                <div class="product-grid">
-                    <?php if ($role == 1) : ?>
-                        <!-- My Bookings Card -->
-                        <div class="product-card">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <div class="mb-3" style="font-size: 3rem;">
-                                        <i class="fas fa-calendar-check"></i>
-                                    </div>
-                                    <h5>My Bookings</h5>
-                                    <p class="text-muted">View your vendor bookings</p>
-                                    <a href="view/my_bookings.php" class="btn btn-custom mt-2">
-                                        <i class="fas fa-arrow-right me-2"></i>View
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vendor Requests Card -->
                         <div class="product-card">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <div class="mb-3" style="font-size: 3rem;">
                                         <i class="fas fa-user-check"></i>
                                     </div>
-                                    <h5>Vendor Requests</h5>
-                                    <p class="text-muted">Approve vendors for your events</p>
-                                    <a href="view/vendor_requests.php" class="btn btn-custom mt-2">
+                                    <h5>Your Account</h5>
+                                    <p class="text-muted">Manage your vendor account</p>
+                                    <a href="admin/vendor.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>Manage
                                     </a>
                                 </div>
                             </div>
                         </div>
 
-                    <?php elseif ($role == 2) : ?>
-                        <!-- Customer Bookings Card -->
-                        <div class="product-card">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <div class="mb-3" style="font-size: 3rem;">
-                                        <i class="fas fa-calendar-check"></i>
-                                    </div>
-                                    <h5>Customer Bookings</h5>
-                                    <p class="text-muted">Manage customer bookings</p>
-                                    <a href="view/my_bookings.php" class="btn btn-custom mt-2">
-                                        <i class="fas fa-arrow-right me-2"></i>View
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                    
 
-                        <!-- Vendor Approvals Card -->
-                        <div class="product-card">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <div class="mb-3" style="font-size: 3rem;">
-                                        <i class="fas fa-user-check"></i>
-                                    </div>
-                                    <h5>Vendor Approvals</h5>
-                                    <p class="text-muted">Approve vendors for your events</p>
-                                    <a href="view/vendor_requests.php" class="btn btn-custom mt-2">
-                                        <i class="fas fa-arrow-right me-2"></i>Manage
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
                     <?php endif; ?>
                 </div>
             </div>
 
-        <?php else : ?>
-            <!-- Vendors Banner for Customers -->
-            <div class="vendor-banner">
-                <div class="vendor-banner-content">
-                    <h3><i class="fas fa-search"></i> Need a Vendor?</h3>
-                    <p>Find professional vendors for photography, catering, decoration, and more</p>
-                    <a href="view/browse_vendors.php" class="btn">
-                        <i class="fas fa-users"></i> Browse All Vendors
-                    </a>
-                </div>
-            </div>
         <?php endif; ?>
 
 	</div>

@@ -194,20 +194,27 @@ if ($user_role == 2) {
             </p>
         </div>
 
-        <?php if (empty($bookings)): ?>
+        <?php
+        // Filter out cancelled bookings - only show pending, confirmed, and completed
+        $active_bookings = array_filter($bookings, function($booking) {
+            return in_array($booking['booking_status'], ['pending', 'confirmed', 'completed']);
+        });
+        ?>
+
+        <?php if (empty($active_bookings)): ?>
             <div class="empty-state">
                 <i class="fas fa-calendar-times"></i>
-                <h2>No Bookings Yet</h2>
+                <h2>No Active Bookings</h2>
                 <p class="text-muted">
                     <?php if ($user_role == 2): ?>
-                        You don't have any bookings from customers yet.
+                        You don't have any active bookings from customers yet.
                     <?php else: ?>
-                        You haven't booked any vendors yet. <a href="browse_vendors.php">Browse vendors</a> to get started!
+                        You don't have any active bookings. <a href="browse_vendors.php">Browse vendors</a> to get started!
                     <?php endif; ?>
                 </p>
             </div>
         <?php else: ?>
-            <?php foreach ($bookings as $booking): ?>
+            <?php foreach ($active_bookings as $booking): ?>
                 <div class="booking-card">
                     <div class="booking-header">
                         <div>
