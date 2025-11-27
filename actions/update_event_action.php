@@ -11,6 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $eventLocation = $_POST['eventLocation'] ?? '';
     $eventStart = $_POST['eventStart'] ?? ''; 
     $eventEnd = $_POST['eventEnd'] ?? '';
+    // accept either 'eventDate' or legacy 'updateEventDate'
+    $eventDate = $_POST['eventDate'] ?? $_POST['updateEventDate'] ?? null;
     $eventKey = $_POST['eventKey'] ?? '';
     $user_id = $_POST['user_id'] ?? '';
     $flyer = '';
@@ -37,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!empty($event_id)) {
-        $result = update_event_ctr($event_id, $eventCat, $eventDes, $eventPrice, $eventLocation, $eventStart, $eventEnd,  $flyer, $eventKey);
+        $result = update_event_ctr($event_id, $eventCat, $eventDes, $eventPrice, $eventLocation, $eventDate, $eventStart, $eventEnd,  $flyer, $eventKey);
 
         if ($result) {
             echo json_encode(["status" => "success", "message" => "Event updated successfully!"]);

@@ -2,34 +2,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.querySelector("#orderTable tbody");
 
 
-    // Fetch order
+    // Fetch orders that include events created by the logged-in user
     function loadOrder() {
-        fetch("../actions/fetch_order_action.php")
+        fetch("../actions/fetch_orders_by_creator_action.php")
             .then(res => res.json())
             .then(data => {
                 tableBody.innerHTML = "";
-                if (data.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="3">No orders available</td></tr>`;
-                } else {
-                    data.forEach(order => {
-                        let row = `
-                            <tr>
-                                <td>${order.order_id}</td>
-                                <td>${order.invoice_id}</td>
-                                <td>${order.customer_id}</td>
-                                <td>${order.event_id}</td>
-                                <td>${order.quantity}</td>
-                                <td>${order.total_price}</td>
-                                <td>${order.order_date}</td>
-                                <td>
-                                    <button onclick="openForm(${order.order_id}, '${order.order_name.replace(/'/g, "\\'")}')" class="btn btn-custom btn-sm">Edit</button>
-                                    <button onclick="deleteorder(${order.order_id})" class="btn btn-danger btn-sm">Delete</button>
-                                </td>
-                            </tr>
-                        `;
-                        tableBody.innerHTML += row;
-                    });
+                if (!Array.isArray(data) || data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="text-center">No orders found.</td></tr>`;
+                    document.getElementById('totalOrders').textContent = '0';
+                    return;
                 }
+
+                document.getElementById('totalOrders').textContent = String(data.length);
+
+                data.forEach(order => {
+                    const items = order.item_count || '';
+                    const total = order.total_price !== null ? order.total_price : '';
+                    const invoice = order.invoice_no || order.invoice_id || '';
+                    const row = `
+                        <tr>
+                            <td>${order.order_id}</td>
+                            <td>${invoice}</td>
+                            <td>${order.customer_id}</td>
+                            <td>${items}</td>
+                            <td>${total}</td>
+                            <td>${order.order_date}</td>
+                            <td>
+                                <a href="../view/fetch_order_action.php?order_id=${order.order_id}" class="btn btn-sm btn-outline-secondary">View</a>
+                            </td>
+                        </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            })
+            .catch(err => {
+                console.error('Failed to load orders', err);
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error loading orders.</td></tr>`;
             });
     }
 

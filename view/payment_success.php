@@ -227,5 +227,10 @@ $reference = isset($_GET['reference']) ? htmlspecialchars($_GET['reference']) : 
         // Trigger confetti on page load
         window.addEventListener('load', createConfetti);
     </script>
+
+<?php
+$footer_base = '../';
+include '../includes/footer.php';
+?>
 </body>
 </html>

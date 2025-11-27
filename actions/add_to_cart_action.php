@@ -31,13 +31,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Add to cart using controller
-    $cartController = new CartController();
-    $result = $cartController->add_to_cart_ctr($product_id, $customer_id, $quantity);
+    try {
+        $cartController = new CartController();
+        $result = $cartController->add_to_cart_ctr($product_id, $customer_id, $quantity);
 
-    if ($result) {
-        echo json_encode(['status' => 'success', 'message' => 'Item added to cart successfully']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Failed to add item to cart']);
+        if ($result) {
+            echo json_encode(['status' => 'success', 'message' => 'Item added to cart successfully']);
+        } else {
+            // Get detailed error
+            $error = $cartController->get_last_error_ctr();
+            error_log("Cart add failed for event_id=$product_id, customer_id=$customer_id: " . $error);
+            echo json_encode(['status' => 'error', 'message' => 'Failed to add item to cart', 'debug' => $error]);
+        }
+    } catch (Exception $e) {
+        error_log("Cart exception: " . $e->getMessage());
+        echo json_encode(['status' => 'error', 'message' => 'Server error: ' . $e->getMessage()]);
     }
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);

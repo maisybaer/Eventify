@@ -2,13 +2,21 @@
 require_once '../controllers/event_controller.php';
 require_once '../settings/core.php';
 
-// Get the logged-in user’s ID (if required)
+// Get the logged-in user's ID (if required)
 $user_id = getUserID();
 
 // Fetch all events
 $events = view_all_event_ctr();
 
-if ($events === false || empty($events)) {
+// Debug: Check if there's an error
+if ($events === false) {
+    // Log error and return empty array with debug info
+    error_log('fetch_event_action.php: view_all_event_ctr returned false');
+    echo json_encode(['error' => 'Database query failed', 'events' => []]);
+    exit;
+}
+
+if (empty($events)) {
     echo json_encode([]);
     exit;
 }

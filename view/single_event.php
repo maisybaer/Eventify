@@ -16,24 +16,107 @@ if ($event_id > 0) {
     <title>Event Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../settings/styles.css?v=1.1">
-    
+
     <style>
-        body { background-color: #f8f9fa; }
-        .product-container { padding-top: 100px; }
-        .card { max-width: 500px; margin: auto; }
-        .event-image { max-width: 100%; border-radius: 10px; }
-        .menu-tray {
-            position: fixed; top: 16px; right: 16px;
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #e9e9e9;
-            border-radius: 10px; padding: 6px 10px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            z-index: 1200;
+        body {
+            background-color: #f8f9fa;
         }
-    </style>
-    
+
+        .product-container {
+            padding-top: 100px;
+        }
+
+        .card {
+            max-width: 900px;
+            margin: auto;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            padding: 1.5rem;
+        }
+
+        .card-header h2 {
+            color: white !important;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .card-body p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .card-body strong {
+            color: #f97316;
+            font-weight: 600;
+        }
+
+        .card-footer {
+            background: #f8f9fa;
+            border-radius: 0 0 20px 20px;
+            padding: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .event-image {
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-tray {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50px;
+            padding: 8px 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            z-index: 1200;
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-tray a {
+            margin: 0 6px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .form-control:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.25);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
     </style>
 
 </head>
@@ -54,30 +137,16 @@ if ($event_id > 0) {
 
     <div>
         <div class="container" style="padding-top:120px;">
-
             <div class="text-center">
-                
-                <h1>View Item</h1>
-
-            </div>
-
-            <div class="search-tray">
-                <input type="text" id="searchBox" placeholder="Search events...">
-                <button class="btn btn-sm btn-outline-secondary" id="searchBtn">Search</button>
-
-                <select id="categoryFilter">
-                    <option value="">Filter by Category</option>
-                </select>
-
+                <h1>View Event</h1>
             </div>
         </div>
     </div>
 
-
-    <main class="container event-container">
+    <main class="container event-container" style="padding-top:40px;">
 
         <?php if (!$event): ?>
-            <div class="alert alert-warning">event not found.</div>
+            <div class="alert alert-warning">Event not found.</div>
         <?php else: ?>
 
             <?php
@@ -111,15 +180,16 @@ if ($event_id > 0) {
                             <h2 class="mb-0"><?php echo htmlspecialchars($event['event_desc'] ?? ''); ?></h2>
                         </div>
                         <div class="card-body">
-                            <p><strong>Event ID:</strong> <?php echo (int)$event['event_id']; ?></p>
                             <p><strong>Category:</strong> <?php echo htmlspecialchars($event['category'] ?? $event['event_cat'] ?? ''); ?></p>
-                            <p><strong>Description:</strong><br><?php echo nl2br(htmlspecialchars($event['event_desc'] ?? '')); ?></p>
-                            <p><strong>Price:</strong> $<?php echo htmlspecialchars($event['event_price']); ?></p>
+                            <p><strong>Price:</strong> GHS <?php echo htmlspecialchars($event['event_price']); ?></p>
+                            <?php if (!empty($event['event_date'])): ?>
+                            <p><strong>Date:</strong> <?php echo date('F j, Y', strtotime($event['event_date'])); ?></p>
+                            <?php endif; ?>
                             <p><strong>Time:</strong> <?php echo htmlspecialchars($event['event_start'] ?? '') . ' - ' . htmlspecialchars($event['event_end'] ?? ''); ?></p>
                             <p><strong>Location:</strong> <?php echo htmlspecialchars($event['event_location'] ?? ''); ?></p>
-                            <p><strong>Start Time:</strong> <?php echo htmlspecialchars($event['event_start'] ?? ''); ?></p>
-                            <p><strong>End Time:</strong> <?php echo htmlspecialchars($event['event_end'] ?? ''); ?></p>
+                            <?php if (!empty($event['event_keywords'])): ?>
                             <p><strong>Keywords:</strong> <?php echo htmlspecialchars($event['event_keywords'] ?? ''); ?></p>
+                            <?php endif; ?>
                             <div class="mt-3">
                                 <label for="eventQuantity" class="form-label fw-semibold">Quantity</label>
                                 <input
@@ -133,10 +203,7 @@ if ($event_id > 0) {
                             </div>
                         </div>
                         <div class="card-footer text-center">
-                            <form action="#" method="POST">
-                                <input type="hidden" name="event_id" value="<?php echo (int)$event['event_id']; ?>">
-                                <button id="addToCartBtn" class="btn btn-primary mt-2" data-id="<?php echo (int)$event['event_id']; ?>">Add to Cart</button>
-                            </form>
+                            <button id="addToCartBtn" class="btn btn-primary mt-2" data-id="<?php echo (int)$event['event_id']; ?>">Add to Cart</button>
                         </div>
                     </div>
                 </div>
@@ -148,13 +215,16 @@ if ($event_id > 0) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../js/all_events.js"></script>
     <script>
         $(document).ready(function(){
+            console.log('Page loaded, session user:', <?php echo json_encode($_SESSION['user_id'] ?? null); ?>);
+
             $('#addToCartBtn').on('click', function(e){
                 e.preventDefault();
                 const eventId = $(this).data('id');
                 const quantity = parseInt($('#eventQuantity').val(), 10) || 1;
+
+                console.log('Adding to cart:', { event_id: eventId, quantity: quantity });
 
                 if (quantity <= 0) {
                     Swal.fire({
@@ -164,13 +234,14 @@ if ($event_id > 0) {
                     });
                     return;
                 }
-                
+
                 $.ajax({
                     url: '../actions/add_to_cart_action.php',
                     method: 'POST',
                     data: { event_id: eventId, quantity: quantity },
                     dataType: 'json',
                     success: function(response) {
+                        console.log('Server response:', response);
                         if(response.status === 'success'){
                             Swal.fire({
                                 icon: 'success',
@@ -187,17 +258,24 @@ if ($event_id > 0) {
                             });
                         }
                     },
-                    error: function(){
+                    error: function(xhr, status, error){
+                        console.error('AJAX Error:', status, error);
+                        console.error('Response Text:', xhr.responseText);
+                        console.error('Status Code:', xhr.status);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Failed to add item to cart. Please try again.'
+                            text: 'Failed to add item to cart. Check console for details.'
                         });
                     }
                 });
             });
         });
-        </script>
+    </script>
 
+<?php
+$footer_base = '../';
+include '../includes/footer.php';
+?>
 </body>
 </html>

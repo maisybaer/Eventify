@@ -17,66 +17,63 @@ $db = new db_connection();
 
 <head>
     <meta charset="UTF-8">
-    <title>Categories - Taste of Africa</title>
+    <title>Categories</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../settings/styles.css">
+    <link rel="icon" href="../settings/favicon.ico">
 </head>
 
 <body>
     <header>
-	<div class="menu-tray">
-		<span class="me-2">Menu:</span>
-		<?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../index.php" class="btn btn-sm btn-outline-primary">Home</a>
-			<a href="../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
-		<?php else: ?>
-            <a href="../index.php" class="btn btn-sm btn-outline-primary">Home</a>
-			<a href="../login/login.php" class="btn btn-sm btn-outline-secondary">Login</a>
-            <p><br>Login to see your Categories</p>
-		<?php endif; ?>			
-	</div>
+    <!-- Navigation -->
+    <div class="menu-tray">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+            <a href="../view/browse_vendors.php"><i class="fas fa-users"></i> Browse Vendors</a>
+            <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <?php else: ?>
+            <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
+            <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
+        <?php endif; ?>
+    </div>
     </header>
 
     <main>
     <div class="container header-container">
-        <div class="row justify-content-center animate__animated animate__fadeInDown">
-           
-            <h1>Categories</h1>
-            <h4>All the categories you have created are listed below</h4>
-        
-            <!-- Create category form-->
+        <div class="text-center mb-4 fade-in">
+            <span class="badge mb-3">
+                <a href="../home.php"><img src="../settings/logo.png" alt="eventify logo" style="width:80-px; height:80px; margin-right:8px;"></a>     
+            </span>
+            <h1 class="mb-2">Categories</h1>
+            <p class="text-muted">Create and manage your categories for easy event organization.</p>
+        </div>
+
+        <div class="row">
             <div class="col-md-6">
-                <div class="card animate__animated animate__zoomIn">
-                    <div class="card-header text-center highlight">
-                        <h4>Create a new category</h4>
-                    </div>
-
-                    <div class="card-body">
-                        <form method="POST" action="" class="mt-4" id="addCatForm">
-                            <div class="mb-3">
-                                <label for="catName" class="form-label">Category Name</label>
-                                <input type="text" class="form-control animate__animated animate__fadeInUp" id="cat_name" name="cat_name" required>
-                                <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
-                            </div>
-
-                            <button type="submit" class="btn btn-custom w-100 animate-pulse-custom">Add New Category</button>
-                        </form>
-                    </div>
+                <div class="form-section slide-up">
+                    <h3 class="mb-3"><i class="fas fa-plus-circle"></i> Create New Category</h3>
+                    <form id="addCatForm">
+                        <input type="hidden" id="user_id" name="user_id" value="<?php echo $_SESSION['user_id'] ?? ''; ?>">
+                        <div class="mb-3">
+                            <label for="catName" class="form-label">Category Name *</label>
+                            <input type="text" class="form-control" id="cat_name" name="cat_name" placeholder="Enter category name" required>
+                        </div>
+                        <button type="submit" class="btn btn-custom btn-lg w-100">Add Category</button>
+                    </form>
                 </div>
             </div>
 
-            <!-- View Categories-->
             <div class="col-md-6">
-                <div class="card animate__animated animate__zoomIn">
-                    <div class="card-header text-center highlight">
-                        <h4>Your current Categories</h4>
+                <div class="table-container slide-up">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0"><i class="fas fa-list"></i> Your Categories</h3>
+                        <input type="text" id="searchCats" class="form-control" placeholder="Search categories..." style="max-width:300px;">
                     </div>
 
-
-                    <div class="card-body">
-                        <table id="catTable">
+                    <div class="table-responsive">
+                        <table class="table" id="catTable">
                             <thead>
                                 <tr>
                                     <th>Category ID</th>
@@ -85,37 +82,12 @@ $db = new db_connection();
                                 </tr>
                             </thead>
                             <tbody>
-                                <td>No categories available</td>
-                                <td></td>
-                                <td>
-                                    <button onclick="openForm()" class="small btn btn-custom w-100 animate-pulse-custom">Edit</button>
-                                        <!-- Update Category Popup -->
-                                            <div id="updatePopup" class="form-popup">
-                                                <div class="card mx-auto p-4" style="max-width: 400px; background-color: #fff; border-radius: 10px;">
-                                                    <h5 class="text-center mb-3 highlight">Update Category</h5>
-                                                    <form id="updateForm">
-                                                        <div class="mb-3">
-                                                            <label for="update_cat_name" class="form-label">New Category Name</label>
-                                                            <input type="text" class="form-control" id="update_cat_name" required>
-                                                            <input type="hidden" id="update_cat_id">
-                                                        </div>
-                                                        <div class="d-flex justify-content-between">
-                                                            <button type="submit" id="saveUpdate" class="btn btn-custom">Save</button>
-                                                            <button type="button" id="cancelUpdate" class="btn btn-secondary">Cancel</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-
-                                    <button class="small btn btn-custom w-100 animate-pulse-custom">Delete</button>
-                                </td>
+                                <tr><td colspan="3" class="text-center" style="padding:2rem;">No categories yet. Create one using the form to the left.</td></tr>
                             </tbody>
-
                         </table>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
     </main>
@@ -125,8 +97,10 @@ $db = new db_connection();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/category.js"></script>
 
-    
+<?php
+$footer_base = '../';
+include '../includes/footer.php';
+?>
 </body>
-
 </html>
 

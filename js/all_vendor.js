@@ -66,30 +66,42 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a class="vendor-link" href="${linkTarget}" style="text-decoration:none;color:inherit;">
                     <div class="card h-100">
                         <div class="card-body text-center">
-                            <div class="mb-3" style="height:150px;overflow:hidden;">
+                            <div class="mb-3" style="height:150px;overflow:hidden;border-radius:8px;">
                                 <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(vName)}" style="width:100%;height:150px;object-fit:cover;" onerror="this.onerror=null;this.src='${fallbackSrc}'" />
                             </div>
-                            <h5>${escapeHtml(vName)}</h5>
-                            <p class="text-muted">${escapeHtml(vType)}</p>
-                            <p style="font-size:0.9rem;">${escapeHtml(vEmail)}<br>${escapeHtml(vContact)}</p>
-                            <div><button type="button" class="btn btn-custom mt-2">Profile</button></div>
+                            <h5 style="font-weight:600;color:#2d3748;margin-bottom:0.75rem;">${escapeHtml(vName)}</h5>
+                            ${vType ? `<p><span class="vendor-type">${escapeHtml(vType)}</span></p>` : ''}
+                            <div class="vendor-meta">
+                                ${vEmail ? `<div class="vendor-contact"><i class="fas fa-envelope"></i> <span>${escapeHtml(vEmail)}</span></div>` : ''}
+                                ${vContact ? `<div class="vendor-contact"><i class="fas fa-phone"></i> <span>${escapeHtml(vContact)}</span></div>` : ''}
+                            </div>
+                            <div><button type="button" class="btn btn-custom mt-3 w-100">View Profile</button></div>
                         </div>
                     </div>
                     </a>
                 `;
             } else {
                 // Default: render as vendor card
+                const vName = p.customer_name || p.vendor_desc || 'Vendor';
+                const vEmail = p.customer_email || '';
+                const vContact = p.customer_contact || '';
+                const vType = p.vendor_type || category || '';
+
                 wrapper.innerHTML = `
                     <a class="vendor-link" href="${linkTarget}" style="text-decoration:none;color:inherit;">
                     <div class="card h-100">
                         <div class="card-body text-center">
-                            <div class="mb-3" style="height:150px;overflow:hidden;">
-                                <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(title)}" style="width:100%;height:150px;object-fit:cover;" onerror="this.onerror=null;this.src='${fallbackSrc}'" />
+                            <div class="mb-3" style="height:150px;overflow:hidden;border-radius:8px;">
+                                <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(vName)}" style="width:100%;height:150px;object-fit:cover;" onerror="this.onerror=null;this.src='${fallbackSrc}'" />
                             </div>
-                            <h5>${escapeHtml(title)}</h5>
-                            <p class="text-muted">${escapeHtml(category)}</p>
-                            ${price !== '' ? `<p><strong>$${escapeHtml(String(price))}</strong></p>` : ''}
-                            <div><button type="button" class="btn btn-custom mt-2">View</button></div>
+                            <h5 style="font-weight:600;color:#2d3748;margin-bottom:0.75rem;">${escapeHtml(vName)}</h5>
+                            ${vType ? `<p><span class="vendor-type">${escapeHtml(vType)}</span></p>` : ''}
+                            ${price !== '' ? `<p style="font-weight:600;color:#667eea;font-size:1.1rem;">GHS ${escapeHtml(String(price))}</p>` : ''}
+                            <div class="vendor-meta">
+                                ${vEmail ? `<div class="vendor-contact"><i class="fas fa-envelope"></i> <span>${escapeHtml(vEmail)}</span></div>` : ''}
+                                ${vContact ? `<div class="vendor-contact"><i class="fas fa-phone"></i> <span>${escapeHtml(vContact)}</span></div>` : ''}
+                            </div>
+                            <div><button type="button" class="btn btn-custom mt-3 w-100">View Profile</button></div>
                         </div>
                     </div>
                     </a>

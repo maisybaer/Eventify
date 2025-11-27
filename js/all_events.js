@@ -42,7 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = p.category || '';
             const price = (typeof p.event_price !== 'undefined' && p.event_price !== null) ? p.event_price : '';
             const eventId = p.event_id || '';
+            const eventDate = p.event_date || '';
+            const eventLocation = p.event_location || '';
             const fallbackSrc = '../uploads/no-image.svg';
+
+            // Format date if available
+            let formattedDate = '';
+            if (eventDate) {
+                try {
+                    const dateObj = new Date(eventDate);
+                    formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                } catch (e) {
+                    formattedDate = eventDate;
+                }
+            }
 
             const wrapper = document.createElement('div');
             wrapper.className = 'product-card';
@@ -55,7 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <h5>${title}</h5>
                         <p class="text-muted">${category}</p>
-                        <p><strong>$${price !== '' ? price : ''}</strong></p>
+                        ${formattedDate ? `<p class="event-date"><i class="fas fa-calendar"></i> ${formattedDate}</p>` : ''}
+                        ${eventLocation ? `<p class="event-location"><i class="fas fa-map-marker-alt"></i> ${eventLocation}</p>` : ''}
+                        <p class="event-price">$${price !== '' ? price : '0'}</p>
                         <a href="single_event.php?event_id=${encodeURIComponent(eventId)}" class="btn btn-custom mt-2">View</a>
                     </div>
                 </div>

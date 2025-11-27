@@ -122,5 +122,9 @@ if ($conn) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/vendor.js"></script>
 
+<?php
+$footer_base = '../';
+include '../includes/footer.php';
+?>
 </body>
 </html>
