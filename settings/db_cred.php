@@ -33,7 +33,7 @@ if (!defined("USERNAME")) {
 }
 
 if (!defined("PASSWD")) {
-    define("PASSWD", "smarty8Aa.g");
+    define("PASSWD", "smarty8Aa.g@");
 }
 
 if (!defined("DATABASE")) {
