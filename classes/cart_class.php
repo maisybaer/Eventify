@@ -25,7 +25,7 @@ class Cart extends db_connection
     public function addToCart($event_id, $customer_id, $qty)
     {
         // Check if the event already exists in the cart for this customer
-        $check_query = "SELECT qty FROM cart WHERE event_id = ? AND customer_id = ?";
+        $check_query = "SELECT qty FROM eventify_cart WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($check_query);
         $stmt->bind_param("ii", $event_id, $customer_id);
         $stmt->execute();
@@ -36,13 +36,13 @@ class Cart extends db_connection
             $row = $result->fetch_assoc();
             $new_qty = $row['qty'] + $qty;
 
-            $update_query = "UPDATE cart SET qty = ? WHERE event_id = ? AND customer_id = ?";
+            $update_query = "UPDATE eventify_cart SET qty = ? WHERE event_id = ? AND customer_id = ?";
             $stmt = $this->db->prepare($update_query);
             $stmt->bind_param("iii", $new_qty, $event_id, $customer_id);
             return $stmt->execute();
         } else {
             // Add new product to cart
-            $insert_query = "INSERT INTO cart (event_id, customer_id, qty) VALUES (?, ?, ?)";
+            $insert_query = "INSERT INTO eventify_cart (event_id, customer_id, qty) VALUES (?, ?, ?)";
             $stmt = $this->db->prepare($insert_query);
             $stmt->bind_param("iii", $event_id, $customer_id, $qty);
             return $stmt->execute();
@@ -54,7 +54,7 @@ class Cart extends db_connection
      */
     public function updateCart($event_id, $customer_id, $qty)
     {
-        $query = "UPDATE cart SET qty = ? WHERE event_id = ? AND customer_id = ?";
+        $query = "UPDATE eventify_cart SET qty = ? WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("iii", $qty, $event_id, $customer_id);
         return $stmt->execute();
@@ -65,7 +65,7 @@ class Cart extends db_connection
      */
     public function removeFromCart($event_id, $customer_id)
     {
-        $query = "DELETE FROM cart WHERE event_id = ? AND customer_id = ?";
+        $query = "DELETE FROM eventify_cart WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("ii", $event_id, $customer_id);
         return $stmt->execute();
@@ -150,7 +150,7 @@ class Cart extends db_connection
 
         $select = implode(", ", $selectParts);
 
-          $query = "SELECT {$select} FROM cart c
+          $query = "SELECT {$select} FROM eventify_cart c
               LEFT JOIN eventify_products e ON c.event_id = e.event_id
               WHERE c.customer_id = ?";
 
@@ -179,7 +179,7 @@ class Cart extends db_connection
      */
     public function emptyCart($customer_id)
     {
-        $query = "DELETE FROM cart WHERE customer_id = ?";
+        $query = "DELETE FROM eventify_cart WHERE customer_id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("i", $customer_id);
         return $stmt->execute();
@@ -190,7 +190,7 @@ class Cart extends db_connection
      */
     public function existingEventCheck($event_id, $customer_id)
     {
-        $query = "SELECT * FROM cart WHERE event_id = ? AND customer_id = ?";
+        $query = "SELECT * FROM eventify_cart WHERE event_id = ? AND customer_id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("ii", $event_id, $customer_id);
         $stmt->execute();

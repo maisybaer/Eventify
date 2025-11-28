@@ -45,20 +45,184 @@ if ($conn) {
     <link rel="icon" href="../settings/favicon.ico">
     
     <style>
-        body { background-color: #f8f9fa; }
-        .product-container { padding-top: 100px; }
-        .card { max-width: 500px; margin: auto; }
-        .event-image { max-width: 100%; border-radius: 10px; }
-        .menu-tray {
-            position: fixed; top: 16px; right: 16px;
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #e9e9e9;
-            border-radius: 10px; padding: 6px 10px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            z-index: 1200;
+        .vendor-page {
+            padding-top: 120px;
+            padding-bottom: 60px;
         }
-    </style>
-    
+
+        .vendor-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .vendor-header h1 {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .vendor-header p {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+        }
+
+        .vendor-image-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .vendor-image {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 4px solid white;
+            transition: transform 0.3s;
+        }
+
+        .vendor-image:hover {
+            transform: scale(1.05);
+        }
+
+        .vendor-profile-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            padding: 2.5rem;
+            transition: all 0.3s;
+        }
+
+        .vendor-profile-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-secondary);
+        }
+
+        .profile-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .profile-info-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+
+        .profile-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-info-item i {
+            color: var(--brand);
+            width: 24px;
+            font-size: 1.125rem;
+            margin-top: 0.25rem;
+        }
+
+        .profile-info-item strong {
+            color: var(--text-dark);
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-info-item .info-value {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .vendor-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--bg-secondary);
+        }
+
+        .vendor-section h5 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .vendor-section i {
+            color: var(--brand);
+            font-size: 1.25rem;
+        }
+
+        .edit-mode-form {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .alert {
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 2rem;
+            border: none;
+            font-weight: 500;
+        }
+
+        .alert-warning {
+            background: rgba(255, 217, 61, 0.15);
+            color: #ff9800;
+        }
+
+        .alert-danger {
+            background: rgba(255, 82, 82, 0.15);
+            color: var(--error);
+        }
+
+        .vendor-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--gradient-primary);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+            color: white;
+            box-shadow: var(--shadow-brand);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
     </style>
 
 </head>
@@ -76,6 +240,8 @@ if ($conn) {
 
         <?php if (isset($_SESSION['user_id'])): ?>
             <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+            <a href="vendor.php"><i class="fas fa-user"></i> Profile</a>
+            <a href="vendor_requests.php"><i class="fas fa-inbox"></i> Requests</a>
             <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
             <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
@@ -84,26 +250,38 @@ if ($conn) {
     </div>
     </header>
 
-    <div class="container" style="padding-top:120px; max-width:900px;">
-        <div class="text-center mb-4">
-            <h1>Your Vendor Account</h1>
-            <p class="text-muted">Manage your vendor profile and details.</p>
+    <div class="container vendor-page" style="max-width:1100px;">
+        <div class="vendor-header animate__animated animate__fadeInDown">
+            <h1><i class="fas fa-store"></i> Your Vendor Account</h1>
+            <p>Manage your vendor profile and grow your business</p>
         </div>
 
         <?php if (!$customer): ?>
-            <div class="alert alert-warning">Customer record not found.</div>
+            <div class="alert alert-warning animate__animated animate__fadeIn">
+                <i class="fas fa-exclamation-triangle"></i> Customer record not found.
+            </div>
         <?php elseif (intval($customer['user_role']) !== 2): ?>
-            <div class="alert alert-danger">Access denied. This page is for vendor accounts only.</div>
+            <div class="alert alert-danger animate__animated animate__fadeIn">
+                <i class="fas fa-ban"></i> Access denied. This page is for vendor accounts only.
+            </div>
         <?php else: ?>
-            <div class="row">
-                <div class="col-md-4 text-center">
-                    <?php $img = $customer['customer_image'] ?? ''; ?>
-                    <img src="<?php echo htmlspecialchars($img ? $img : '../uploads/no-image.svg'); ?>" class="img-fluid" style="max-width:220px; border-radius:8px;" alt="Vendor Image">
+            <div class="row animate__animated animate__fadeInUp">
+                <div class="col-md-4">
+                    <div class="vendor-image-container">
+                        <?php $img = $customer['customer_image'] ?? ''; ?>
+                        <img src="<?php echo htmlspecialchars($img ? $img : '../uploads/no-image.svg'); ?>"
+                             class="vendor-image"
+                             alt="Vendor Image">
+                    </div>
                 </div>
+
                 <div class="col-md-8">
-                    <div class="card p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="mb-0">Vendor Profile</h3>
+                    <div class="vendor-profile-card">
+                        <div class="profile-header">
+                            <h3>
+                                <i class="fas fa-user-tie"></i>
+                                Vendor Profile
+                            </h3>
                             <button id="editProfileBtn" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> Edit Profile
                             </button>
@@ -111,56 +289,108 @@ if ($conn) {
 
                         <!-- View Mode -->
                         <div id="viewMode">
-                            <p><strong>Name:</strong> <?php echo htmlspecialchars($customer['customer_name']); ?></p>
-                            <p><strong>Email:</strong> <?php echo htmlspecialchars($customer['customer_email']); ?></p>
-                            <p><strong>Contact:</strong> <?php echo htmlspecialchars($customer['customer_contact'] ?? 'Not set'); ?></p>
-                            <p><strong>Country:</strong> <?php echo htmlspecialchars($customer['customer_country'] ?? 'Not set'); ?></p>
-                            <p><strong>City:</strong> <?php echo htmlspecialchars($customer['customer_city'] ?? 'Not set'); ?></p>
-                            <hr>
-                            <h5>Vendor Details</h5>
-                            <?php if ($vendor): ?>
-                                <p><strong>Vendor Type:</strong> <?php echo htmlspecialchars($vendor['vendor_type']); ?></p>
-                                <p><strong>Description:</strong> <?php echo htmlspecialchars($vendor['vendor_desc']); ?></p>
-                            <?php else: ?>
-                                <p class="text-muted">No vendor details available</p>
-                            <?php endif; ?>
+                            <div class="profile-info-item">
+                                <i class="fas fa-user"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Name</strong>
+                                    <div class="info-value"><?php echo htmlspecialchars($customer['customer_name']); ?></div>
+                                </div>
+                            </div>
+
+                            <div class="profile-info-item">
+                                <i class="fas fa-envelope"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Email</strong>
+                                    <div class="info-value"><?php echo htmlspecialchars($customer['customer_email']); ?></div>
+                                </div>
+                            </div>
+
+                            <div class="profile-info-item">
+                                <i class="fas fa-phone"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Contact</strong>
+                                    <div class="info-value"><?php echo htmlspecialchars($customer['customer_contact'] ?? 'Not set'); ?></div>
+                                </div>
+                            </div>
+
+                            <div class="profile-info-item">
+                                <i class="fas fa-globe"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Country</strong>
+                                    <div class="info-value"><?php echo htmlspecialchars($customer['customer_country'] ?? 'Not set'); ?></div>
+                                </div>
+                            </div>
+
+                            <div class="profile-info-item">
+                                <i class="fas fa-city"></i>
+                                <div class="flex-grow-1">
+                                    <strong>City</strong>
+                                    <div class="info-value"><?php echo htmlspecialchars($customer['customer_city'] ?? 'Not set'); ?></div>
+                                </div>
+                            </div>
+
+                            <div class="vendor-section">
+                                <h5>
+                                    <i class="fas fa-briefcase"></i>
+                                    Vendor Details
+                                </h5>
+                                <?php if ($vendor): ?>
+                                    <div class="profile-info-item">
+                                        <i class="fas fa-tag"></i>
+                                        <div class="flex-grow-1">
+                                            <strong>Vendor Type</strong>
+                                            <div class="info-value"><?php echo htmlspecialchars($vendor['vendor_type']); ?></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-item">
+                                        <i class="fas fa-info-circle"></i>
+                                        <div class="flex-grow-1">
+                                            <strong>Description</strong>
+                                            <div class="info-value"><?php echo htmlspecialchars($vendor['vendor_desc']); ?></div>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="text-muted"><i class="fas fa-exclamation-circle"></i> No vendor details available</p>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
                         <!-- Edit Mode (Hidden by default) -->
-                        <div id="editMode" style="display: none;">
+                        <div id="editMode" class="edit-mode-form" style="display: none;">
                             <form id="vendorProfileForm">
                                 <div class="mb-3">
-                                    <label class="form-label">Name</label>
+                                    <label class="form-label"><i class="fas fa-user"></i> Name</label>
                                     <input type="text" class="form-control" id="editName" name="name" value="<?php echo htmlspecialchars($customer['customer_name']); ?>" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Contact</label>
+                                    <label class="form-label"><i class="fas fa-phone"></i> Contact</label>
                                     <input type="text" class="form-control" id="editContact" name="contact" value="<?php echo htmlspecialchars($customer['customer_contact'] ?? ''); ?>">
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Country</label>
+                                    <label class="form-label"><i class="fas fa-globe"></i> Country</label>
                                     <input type="text" class="form-control" id="editCountry" name="country" value="<?php echo htmlspecialchars($customer['customer_country'] ?? ''); ?>">
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">City</label>
+                                    <label class="form-label"><i class="fas fa-city"></i> City</label>
                                     <input type="text" class="form-control" id="editCity" name="city" value="<?php echo htmlspecialchars($customer['customer_city'] ?? ''); ?>">
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Vendor Type</label>
+                                    <label class="form-label"><i class="fas fa-tag"></i> Vendor Type</label>
                                     <input type="text" class="form-control" id="editVendorType" name="vendor_type" value="<?php echo htmlspecialchars($vendor['vendor_type'] ?? ''); ?>">
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Description</label>
+                                    <label class="form-label"><i class="fas fa-info-circle"></i> Description</label>
                                     <textarea class="form-control" id="editDescription" name="description" rows="3"><?php echo htmlspecialchars($vendor['vendor_desc'] ?? ''); ?></textarea>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Profile Image</label>
+                                    <label class="form-label"><i class="fas fa-image"></i> Profile Image</label>
                                     <input type="file" class="form-control" id="editImage" name="image" accept="image/*">
                                     <small class="text-muted">Leave blank to keep current image</small>
                                 </div>
@@ -176,14 +406,6 @@ if ($conn) {
                             </form>
                         </div>
 
-                        <div class="mt-4">
-                            <a href="../admin/event.php" class="btn btn-outline-primary">
-                                <i class="fas fa-calendar"></i> My Events
-                            </a>
-                            <a href="../view/vendor_dashboard.php" class="btn btn-outline-secondary">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>

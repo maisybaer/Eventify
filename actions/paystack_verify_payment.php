@@ -113,9 +113,10 @@ try {
             }
         }
 
-        // No service fee applied
-        $expected_amount = round($calculated_total, 2);
-        error_log("Calculated expected amount from cart: $expected_amount GHS");
+        // Apply 15% service fee
+        $service_fee = $calculated_total * 0.15;
+        $expected_amount = round($calculated_total + $service_fee, 2);
+        error_log("Calculated expected amount from cart: $expected_amount GHS (Subtotal: $calculated_total + Service Fee: $service_fee)");
     }
 
     // Use the expected amount for verification
@@ -246,9 +247,9 @@ try {
         unset($_SESSION['paystack_ref']);
         unset($_SESSION['paystack_amount']);
         unset($_SESSION['paystack_timestamp']);
-        
+
         // Log user activity
-        log_user_activity("Completed payment via Paystack - Invoice: $invoice_no, Amount: GHS $total_amount, Reference: $reference");
+        error_log("User Activity - Completed payment via Paystack - Invoice: $invoice_no, Amount: GHS $total_amount, Reference: $reference");
         
         // Return success response
         echo json_encode([

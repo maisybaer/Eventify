@@ -29,14 +29,14 @@ if (!defined("SERVER")) {
 }
 
 if (!defined("USERNAME")) {
-    define("USERNAME", "root");
+    define("USERNAME", "maisy.baer");
 }
 
 if (!defined("PASSWD")) {
-    define("PASSWD", "");
+    define("PASSWD", "smarty8Aa.g:");
 }
 
 if (!defined("DATABASE")) {
-    define("DATABASE", "eventify");
+    define("DATABASE", "ecommerce_2025A_maisy_baer");
 }
 ?>

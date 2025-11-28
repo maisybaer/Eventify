@@ -3,8 +3,12 @@
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Load checkout summary
-    loadCheckoutSummary();
+    // Only load checkout summary if the container exists (for dynamic loading scenarios)
+    // The checkout page already has items loaded server-side via PHP
+    const container = document.getElementById('checkoutItemsContainer');
+    if (container) {
+        loadCheckoutSummary();
+    }
 });
 
 /**
@@ -12,9 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function loadCheckoutSummary() {
     const container = document.getElementById('checkoutItemsContainer');
-    
+
     if (!container) {
-        console.error('Container not found: checkoutItemsContainer');
+        // Container doesn't exist - checkout page loads items via PHP, not JavaScript
         return;
     }
     

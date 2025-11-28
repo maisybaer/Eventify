@@ -2,9 +2,13 @@
 require_once '../settings/core.php';
 require_once '../controllers/order_controller.php';
 
-require_login('../login/login.php');
+// Check if user is logged in
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    header('Location: ../login/login.php');
+    exit();
+}
 
-$customer_id = get_user_id();
+$customer_id = getUserID();
 $invoice_no = isset($_GET['invoice']) ? htmlspecialchars($_GET['invoice']) : '';
 $reference = isset($_GET['reference']) ? htmlspecialchars($_GET['reference']) : '';
 ?>
@@ -13,172 +17,246 @@ $reference = isset($_GET['reference']) ? htmlspecialchars($_GET['reference']) : 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - Aya Crafts</title>
+    <title>Payment Successful - Eventify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../settings/styles.css?v=<?php echo time(); ?>">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #ffffff; }
-        
-        .navbar { background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%); padding: 20px 0; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); }
-        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; }
-        .logo { font-family: 'Cormorant Garamond', serif; font-size: 28px; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
-        
-        .container { max-width: 900px; margin: 60px auto; padding: 0 20px; }
-        
-        .success-box { 
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); 
-            border: 2px solid #6ee7b7; 
-            border-radius: 20px; 
-            padding: 50px 40px; 
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+
+        .success-container {
+            max-width: 800px;
+            margin: 100px auto 50px;
+            padding: 24px;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
             text-align: center;
         }
-        
-        .success-icon { 
-            font-size: 80px; 
-            margin-bottom: 20px; 
-            animation: bounce 1s ease-in-out;
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #059669;
+            margin-bottom: 1.5rem;
+            animation: scaleIn 0.5s ease-out;
         }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
-        
-        h1 { 
-            font-family: 'Cormorant Garamond', serif; 
-            font-size: 3rem; 
-            color: #065f46; 
-            margin-bottom: 10px; 
+
+        .success-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
         }
-        
-        .subtitle { 
-            font-size: 18px; 
-            color: #047857; 
-            margin-bottom: 30px; 
+
+        .success-subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
         }
-        
-        .order-details { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            margin: 30px 0; 
+
+        .confirmation-badge {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #60a5fa;
+            padding: 1.25rem;
+            border-radius: 16px;
+            color: #1e40af;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .confirmation-badge i {
+            color: #2563eb;
+            margin-right: 0.5rem;
+        }
+
+        .order-details {
+            background: #f9fafb;
+            padding: 2rem;
+            border-radius: 16px;
+            margin: 2rem 0;
             text-align: left;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
-        
-        .detail-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 12px 0; 
-            border-bottom: 1px solid #f3f4f6;
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
             color: #374151;
         }
-        
-        .detail-row:last-child { border-bottom: none; }
-        .detail-label { font-weight: 600; }
-        .detail-value { color: #6b7280; word-break: break-all; }
-        
-        .btn { 
-            padding: 16px 40px; 
-            border: none; 
-            border-radius: 50px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.4s ease; 
-            text-decoration: none; 
-            display: inline-block;
-            margin: 0 10px;
+
+        .detail-value {
+            color: #6b7280;
+            word-break: break-all;
+            text-align: right;
+            max-width: 60%;
         }
-        
-        .btn-primary { 
-            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); 
-            color: white; 
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3); 
+
+        .detail-value.status {
+            color: #059669;
+            font-weight: 700;
         }
-        
-        .btn-primary:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 12px 35px rgba(220, 38, 38, 0.4); 
-        }
-        
-        .btn-secondary { 
-            background: white; 
-            color: #374151; 
-            border: 2px solid #e5e7eb; 
-        }
-        
-        .btn-secondary:hover { background: #f9fafb; }
-        
-        .buttons-container { 
-            display: flex; 
-            justify-content: center; 
-            margin-top: 40px; 
+
+        .buttons-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
             flex-wrap: wrap;
         }
-        
-        .confirmation-message { 
-            background: #eff6ff; 
-            border: 2px solid #3b82f6; 
-            padding: 20px; 
-            border-radius: 12px; 
-            color: #1e40af;
-            margin-bottom: 20px;
+
+        .btn-custom {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
+            color: white;
+        }
+
+        .btn-secondary-custom {
+            background: white;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-secondary-custom:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        @media (max-width: 768px) {
+            .success-container {
+                margin-top: 80px;
+            }
+
+            .success-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .success-title {
+                font-size: 2rem;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+            }
+
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
-<body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="../index.php" class="logo">Aya Crafts</a>
-            <div style="display: flex; gap: 20px;">
-                <a href="all_product.php" style="color: #374151; text-decoration: none;">← Continue Shopping</a>
-            </div>
-        </div>
-    </nav>
 
-    <div class="container">
-        <div class="success-box">
-            <div class="success-icon">🎉</div>
-            <h1>Order Successful!</h1>
-            <p class="subtitle">Your payment has been processed successfully</p>
-            
-            <div class="confirmation-message">
-                <strong>✓ Payment Confirmed</strong><br>
-                Thank you for your purchase! Your order has been confirmed and will be processed shortly.
-            </div>
-            
-            <div class="order-details">
-                <div class="detail-row">
-                    <span class="detail-label">Invoice Number</span>
-                    <span class="detail-value"><?php echo $invoice_no; ?></span>
+<body>
+    <header class="menu-tray">
+        <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
+        <a href="all_event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> Events</a>
+        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </header>
+
+    <main>
+        <div class="success-container">
+            <div class="success-card">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Payment Reference</span>
-                    <span class="detail-value"><?php echo $reference; ?></span>
+
+                <h1 class="success-title">Payment Successful!</h1>
+                <p class="success-subtitle">Your order has been confirmed and is being processed</p>
+
+                <div class="confirmation-badge">
+                    <i class="fas fa-check-circle"></i>
+                    Payment Confirmed - Thank you for your purchase!
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Order Date</span>
-                    <span class="detail-value"><?php echo date('F j, Y'); ?></span>
+
+                <div class="order-details">
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-receipt" style="color: #f97316; margin-right: 0.5rem;"></i>Invoice Number</span>
+                        <span class="detail-value"><?php echo $invoice_no; ?></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-hashtag" style="color: #f97316; margin-right: 0.5rem;"></i>Payment Reference</span>
+                        <span class="detail-value"><?php echo $reference; ?></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-calendar" style="color: #f97316; margin-right: 0.5rem;"></i>Order Date</span>
+                        <span class="detail-value"><?php echo date('F j, Y'); ?></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-check-circle" style="color: #f97316; margin-right: 0.5rem;"></i>Status</span>
+                        <span class="detail-value status">Paid ✓</span>
+                    </div>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Status</span>
-                    <span class="detail-value" style="color: #059669; font-weight: 600;">Paid ✓</span>
+
+                <div class="buttons-container">
+                    <a href="orders.php" class="btn-custom btn-primary-custom">
+                        <i class="fas fa-box"></i> View My Orders
+                    </a>
+                    <a href="all_event.php" class="btn-custom btn-secondary-custom">
+                        <i class="fas fa-calendar"></i> Browse Events
+                    </a>
                 </div>
-            </div>
-            
-            <div class="buttons-container">
-                <a href="orders.php" class="btn btn-primary">📦 View My Orders</a>
-                <a href="all_product.php" class="btn btn-secondary">Continue Shopping</a>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         // Confetti effect
         function createConfetti() {
-            const colors = ['#dc2626', '#ef4444', '#10b981', '#3b82f6', '#f59e0b'];
-            const confettiCount = 50;
-            
+            const colors = ['#f97316', '#ea580c', '#059669', '#3b82f6', '#fbbf24'];
+            const confettiCount = 60;
+
             for (let i = 0; i < confettiCount; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
@@ -194,36 +272,36 @@ $reference = isset($_GET['reference']) ? htmlspecialchars($_GET['reference']) : 
                         z-index: 10001;
                         pointer-events: none;
                     `;
-                    
+
                     document.body.appendChild(confetti);
-                    
+
                     const duration = 2000 + Math.random() * 1000;
                     const startTime = Date.now();
-                    
+
                     function animateConfetti() {
                         const elapsed = Date.now() - startTime;
                         const progress = elapsed / duration;
-                        
+
                         if (progress < 1) {
                             const top = progress * (window.innerHeight + 50);
                             const wobble = Math.sin(progress * 10) * 50;
-                            
+
                             confetti.style.top = top + 'px';
                             confetti.style.left = `calc(${confetti.style.left} + ${wobble}px)`;
                             confetti.style.opacity = 1 - progress;
                             confetti.style.transform = `rotate(${progress * 720}deg)`;
-                            
+
                             requestAnimationFrame(animateConfetti);
                         } else {
                             confetti.remove();
                         }
                     }
-                    
+
                     animateConfetti();
                 }, i * 30);
             }
         }
-        
+
         // Trigger confetti on page load
         window.addEventListener('load', createConfetti);
     </script>

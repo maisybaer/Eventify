@@ -193,7 +193,7 @@ error_log("Reference from URL: $reference");
                     total_amount: null // Will be calculated from cart
                 };
 
-                // Use real verification on the server; no simulate flag sent
+                console.log('Sending verification request with payload:', payload);
 
                 const response = await fetch('../actions/paystack_verify_payment.php', {
                     method: 'POST',
@@ -202,13 +202,28 @@ error_log("Reference from URL: $reference");
                     },
                     body: JSON.stringify(payload)
                 });
-                
-                const data = await response.json();
-                console.log('Verification response:', data);
-                
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                // Get the raw response text first
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                // Try to parse as JSON
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    console.log('Parsed verification response:', data);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    console.error('Response was not valid JSON:', responseText);
+                    throw new Error('Invalid response from server. Expected JSON but got: ' + responseText.substring(0, 200));
+                }
+
                 // Hide spinner
                 document.getElementById('spinner').style.display = 'none';
-                
+
                 if (data.status === 'success' && data.verified) {
                     // Payment verified successfully
                     // Show success icon
@@ -231,25 +246,61 @@ error_log("Reference from URL: $reference");
                 } else {
                     // Payment verification failed
                     const errorMsg = data.message || 'Payment verification failed';
+                    console.error('Verification failed:', errorMsg, data);
                     showError(errorMsg);
-                    
+
                     // Redirect after 5 seconds
                     setTimeout(() => {
                         window.location.href = 'checkout.php?error=verification_failed';
                     }, 5000);
                 }
-                
+
             } catch (error) {
-                console.error('Verification error:', error);
-                showError('Connection error. Please try again or contact support.');
-                
-                // Redirect after 5 seconds
-                setTimeout(() => {
-                    window.location.href = 'checkout.php?error=connection_error';
-                }, 5000);
+                console.error('Verification error details:', error);
+                console.error('Error type:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+
+                // Show detailed error message
+                let errorMessage = 'Connection error: ' + error.message;
+                showError(errorMessage);
+
+                // Check if cart is empty (which would indicate payment succeeded despite error)
+                checkCartStatus().then(cartEmpty => {
+                    if (cartEmpty) {
+                        console.log('Cart is empty - payment likely succeeded. Redirecting to orders page.');
+                        setTimeout(() => {
+                            window.location.href = 'orders.php';
+                        }, 3000);
+                    } else {
+                        // Redirect to checkout with error after 5 seconds
+                        setTimeout(() => {
+                            window.location.href = 'checkout.php?error=connection_error';
+                        }, 5000);
+                    }
+                });
             }
         }
         
+        /**
+         * Check if cart is empty (indicates successful payment)
+         */
+        async function checkCartStatus() {
+            try {
+                const response = await fetch('../actions/get_cart_action.php', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                console.log('Cart status check:', data);
+
+                // Cart is empty if items array is empty or doesn't exist
+                return !data.items || data.items.length === 0;
+            } catch (error) {
+                console.error('Error checking cart status:', error);
+                return false; // Assume cart is not empty if we can't check
+            }
+        }
+
         /**
          * Show error message
          */

@@ -477,7 +477,7 @@ $footer_base = '';
                                     </div>
                                     <h5>My Bookings</h5>
                                     <p class="text-muted">View your vendor bookings</p>
-                                    <a href="view/my_bookings.php" class="btn btn-custom mt-2">
+                                    <a href="admin/my_bookings.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>View
                                     </a>
                                 </div>
@@ -526,7 +526,7 @@ $footer_base = '';
                                         <i class="fas fa-briefcase"></i>
                                     </div>
                                     <h5>My Event Requests</h5>
-                                    <p class="text-muted">Track your vendor requests</p>
+                                    <p class="text-muted">Track your requests to be a vendor</p>
                                     <a href="vendor/vendor_dashboard.php" class="btn btn-custom mt-2">
                                         <i class="fas fa-arrow-right me-2"></i>View
                                     </a>
@@ -534,6 +534,24 @@ $footer_base = '';
                             </div>
                         </div>
 
+                        <!-- My Service Requests Card -->
+                        <div class="product-card">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3" style="font-size: 3rem;">
+                                        <i class="fas fa-briefcase"></i>
+                                    </div>
+                                    <h5>My Service Requests</h5>
+                                    <p class="text-muted">Track bookings for your services.</p>
+                                    <a href="vendor/vendor_requests.php" class="btn btn-custom mt-2">
+                                        <i class="fas fa-arrow-right me-2"></i>View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Your Account Card -->
                         <div class="product-card">
                             <div class="card h-100">
                                 <div class="card-body text-center">

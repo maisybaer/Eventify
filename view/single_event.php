@@ -1,11 +1,30 @@
 <?php
 require_once '../settings/core.php';
 require_once '../controllers/event_controller.php';
+require_once '../settings/db_class.php';
 
 $event_id = isset($_GET['event_id']) ? (int)$_GET['event_id'] : 0;
 $event = null;
 if ($event_id > 0) {
     $event = view_single_event_ctr($event_id);
+}
+
+// Check if logged-in user is a vendor
+$is_vendor = false;
+if (isset($_SESSION['user_id'])) {
+    $db = new db_connection();
+    $conn = $db->db_conn();
+    if ($conn) {
+        $uid = (int) $_SESSION['user_id'];
+        $sql = "SELECT user_role FROM eventify_customer WHERE customer_id = $uid LIMIT 1";
+        $res = mysqli_query($conn, $sql);
+        if ($res) {
+            $user = mysqli_fetch_assoc($res);
+            if ($user && intval($user['user_role']) === 2) {
+                $is_vendor = true;
+            }
+        }
+    }
 }
 
 ?>
@@ -126,12 +145,17 @@ if ($event_id > 0) {
     <div class="menu-tray">
         <?php if (isset($_SESSION['user_id'])): ?>
             <a href="../index.php"><i class="fas fa-home"></i> Home</a>
-            <a href="cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>
-            <a href ="all_event.php"><i class="fas fa-arrow-right"></i>Back</a>
-            <a href="login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <?php if ($is_vendor): ?>
+                <a href="../vendor/vendor.php"><i class="fas fa-user"></i> Profile</a>
+                <a href="../vendor/vendor_requests.php"><i class="fas fa-inbox"></i> Requests</a>
+            <?php else: ?>
+                <a href="cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>
+            <?php endif; ?>
+            <a href="all_event.php"><i class="fas fa-arrow-left"></i> Back</a>
+            <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="login/register.php" class="btn btn-sm btn-primary">Register</a>
-            <a href="login/login.php" class="btn btn-sm btn-secondary">Login</a>
+            <a href="../login/register.php" class="btn btn-sm btn-primary">Register</a>
+            <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
         <?php endif; ?>
     </div>
 
@@ -190,21 +214,31 @@ if ($event_id > 0) {
                             <?php if (!empty($event['event_keywords'])): ?>
                             <p><strong>Keywords:</strong> <?php echo htmlspecialchars($event['event_keywords'] ?? ''); ?></p>
                             <?php endif; ?>
-                            <div class="mt-3">
-                                <label for="eventQuantity" class="form-label fw-semibold">Quantity</label>
-                                <input
-                                    type="number"
-                                    id="eventQuantity"
-                                    name="quantity"
-                                    class="form-control"
-                                    min="1"
-                                    value="1"
-                                >
+
+                            <?php if (!$is_vendor): ?>
+                                <div class="mt-3">
+                                    <label for="eventQuantity" class="form-label fw-semibold">Quantity</label>
+                                    <input
+                                        type="number"
+                                        id="eventQuantity"
+                                        name="quantity"
+                                        class="form-control"
+                                        min="1"
+                                        value="1"
+                                    >
+                                </div>
+                            <?php else: ?>
+                                <div class="mt-3 alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Vendors cannot purchase event tickets. This page is for viewing event details only.
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if (!$is_vendor): ?>
+                            <div class="card-footer text-center">
+                                <button id="addToCartBtn" class="btn btn-primary mt-2" data-id="<?php echo (int)$event['event_id']; ?>">Add to Cart</button>
                             </div>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button id="addToCartBtn" class="btn btn-primary mt-2" data-id="<?php echo (int)$event['event_id']; ?>">Add to Cart</button>
-                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

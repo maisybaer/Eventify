@@ -33,9 +33,9 @@ if (!empty($cart_items)) {
         $cart_subtotal += $item['qty'] * $item['product_price'];
     }
 }
-// No service fee - customer pays only the subtotal
-$service_fee = 0;
-$cart_total = $cart_subtotal;
+// Calculate 15% service fee
+$service_fee = $cart_subtotal * 0.15;
+$cart_total = $cart_subtotal + $service_fee;
 ?>
 
 <!DOCTYPE html>

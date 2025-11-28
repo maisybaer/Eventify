@@ -456,7 +456,7 @@ if (!empty($cart_items)) {
                     <h2>Your Cart is Empty</h2>
                     <p>Looks like you haven't added any events to your cart yet.</p>
                     <button onclick="window.location.href='all_event.php'" class="btn">
-                        <i class="fas fa-calendar"></i> Browse Events
+                         Browse Events
                     </button>
                 </div>
             <?php endif; ?>
