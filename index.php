@@ -460,7 +460,7 @@ $footer_base = '';
                     <div class="vendor-banner-content">
                         <h3><i class="fas fa-search"></i> Find the Perfect Vendor</h3>
                         <p>Browse through our curated list of professional vendors for your events</p>
-                        <a href="view/<?php echo ($role == 1) ? 'all_vendor.php' : 'browse_vendors.php'; ?>" class="btn">
+                        <a href="view/all_vendor.php" class="btn">
                             <i class="fas fa-users"></i> Browse All Vendors
                         </a>
                     </div>
