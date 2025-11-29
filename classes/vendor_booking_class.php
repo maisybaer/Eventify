@@ -105,6 +105,40 @@ class VendorBooking extends db_connection
     }
 
     /**
+     * Get customer-to-vendor booking requests for a specific vendor
+     */
+    public function getCustomerToVendorRequests($vendor_id)
+    {
+        if (!$this->db) $this->db_connect();
+
+        $stmt = $this->db->prepare(
+            "SELECT
+                vb.*,
+                c.customer_name,
+                c.customer_email,
+                c.customer_contact,
+                e.event_desc,
+                e.event_date,
+                e.event_location
+            FROM eventify_vendor_bookings vb
+            LEFT JOIN eventify_customer c ON vb.customer_id = c.customer_id
+            LEFT JOIN eventify_products e ON vb.event_id = e.event_id
+            WHERE vb.vendor_id = ? AND (vb.booking_type = 'customer_to_vendor' OR vb.booking_type IS NULL OR vb.booking_type = '')
+            ORDER BY vb.booking_date DESC"
+        );
+
+        if (!$stmt) {
+            error_log('getCustomerToVendorRequests prepare failed: ' . $this->db->error);
+            return [];
+        }
+
+        $stmt->bind_param("i", $vendor_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
      * Get a single booking by ID
      */
     public function getBooking($booking_id)

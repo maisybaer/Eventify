@@ -39,6 +39,29 @@ if ($conn) {
     $result = mysqli_query($conn, $query);
     if ($result) {
         $orders = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+        // For each order, fetch the events
+        foreach ($orders as &$order) {
+            $order_id = (int) $order['order_id'];
+            $events_query = "SELECT
+                                od.qty,
+                                e.event_desc,
+                                e.event_location,
+                                e.event_date,
+                                e.event_start,
+                                e.event_end,
+                                e.event_price
+                            FROM eventify_orderdetails od
+                            LEFT JOIN eventify_products e ON od.event_id = e.event_id
+                            WHERE od.order_id = $order_id";
+
+            $events_result = mysqli_query($conn, $events_query);
+            if ($events_result) {
+                $order['events'] = mysqli_fetch_all($events_result, MYSQLI_ASSOC);
+            } else {
+                $order['events'] = [];
+            }
+        }
     }
 }
 ?>
@@ -301,6 +324,26 @@ if ($conn) {
                         <div class="order-details">
                             <div class="detail-item">
                                 <div class="detail-label">
+                                    <i class="fas fa-hashtag"></i>
+                                    Order ID
+                                </div>
+                                <div class="detail-value">
+                                    #<?php echo htmlspecialchars($order['order_id']); ?>
+                                </div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-file-invoice"></i>
+                                    Invoice ID
+                                </div>
+                                <div class="detail-value">
+                                    <?php echo htmlspecialchars($order['invoice_no']); ?>
+                                </div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
                                     <i class="fas fa-calendar"></i>
                                     Order Date
                                 </div>
@@ -323,16 +366,6 @@ if ($conn) {
                                 </div>
                             </div>
 
-                            <div class="detail-item">
-                                <div class="detail-label">
-                                    <i class="fas fa-shopping-bag"></i>
-                                    Items
-                                </div>
-                                <div class="detail-value">
-                                    <?php echo $order['item_count']; ?> item(s)
-                                </div>
-                            </div>
-
                             <?php if ($order['payment_date']): ?>
                             <div class="detail-item">
                                 <div class="detail-label">
@@ -346,11 +379,48 @@ if ($conn) {
                             <?php endif; ?>
                         </div>
 
-                        <div class="order-actions">
-                            <a href="order_details.php?order_id=<?php echo $order['order_id']; ?>" class="btn-view">
-                                <i class="fas fa-eye"></i> View Details
-                            </a>
+                        <!-- Events Booked Section -->
+                        <?php if (!empty($order['events'])): ?>
+                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #f3f4f6;">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-weight: 700;">
+                                <i class="fas fa-calendar-check" style="color: #f97316;"></i> Events Booked
+                            </h5>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <?php foreach ($order['events'] as $event): ?>
+                                <div style="background: #f9fafb; padding: 1rem; border-radius: 12px; border-left: 4px solid #f97316;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+                                        <div style="flex: 1;">
+                                            <h6 style="color: #1f2937; margin-bottom: 0.5rem; font-weight: 600;">
+                                                <?php echo htmlspecialchars($event['event_name'] ?? $event['event_desc'] ?? 'Event'); ?>
+                                            </h6>
+                                            <?php if (!empty($event['event_location'])): ?>
+                                            <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                                <i class="fas fa-map-marker-alt" style="color: #f97316;"></i>
+                                                <?php echo htmlspecialchars($event['event_location']); ?>
+                                            </p>
+                                            <?php endif; ?>
+                                            <?php if (!empty($event['event_date'])): ?>
+                                            <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                                <i class="fas fa-calendar" style="color: #f97316;"></i>
+                                                <?php echo date('M j, Y', strtotime($event['event_date'])); ?>
+                                                <?php if (!empty($event['event_start'])): ?>
+                                                    - <?php echo date('g:i A', strtotime($event['event_start'])); ?>
+                                                <?php endif; ?>
+                                            </p>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Quantity</div>
+                                            <div style="font-size: 1.25rem; font-weight: 700; color: #f97316;">
+                                                x<?php echo htmlspecialchars($event['qty']); ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
 

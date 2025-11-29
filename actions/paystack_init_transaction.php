@@ -75,10 +75,11 @@ try {
         error_log("Paystack transaction initialized successfully - Reference: $reference");
 
         echo json_encode([
-            'status' => 'success',
+            'status' => true,
             'authorization_url' => $paystack_response['data']['authorization_url'],
             'reference' => $reference,
             'access_code' => $paystack_response['data']['access_code'],
+            'public_key' => PAYSTACK_PUBLIC_KEY,
             'message' => 'Redirecting to payment gateway...'
         ]);
     } else {

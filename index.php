@@ -1,5 +1,6 @@
 <?php
 require_once 'settings/core.php';
+require_once 'controllers/subscription_controller.php';
 
 // check login
 if (!isset($_SESSION['user_id'])) {
@@ -11,6 +12,12 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = getUserID();
 $customer_name = getUserName($user_id) ?? '';
 $role = getUserRole();
+
+// Check premium subscription status (for admins/event managers only)
+$has_premium = false;
+if ($role == 1) {
+    $has_premium = has_active_premium_ctr($user_id, 'analytics_premium');
+}
 
 // Set footer base path
 $footer_base = '';
@@ -372,6 +379,15 @@ $footer_base = '';
             </div>
         </div>
 
+        <!-- Account Details Button for Admin and Customers -->
+        <?php if ($role == 1 || $role == 3) : ?>
+        <div class="text-center mb-4">
+            <a href="view/orders.php" class="btn btn-lg" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; border: none; border-radius: 50px; padding: 1rem 3rem; font-weight: 600; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(249, 115, 22, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(249, 115, 22, 0.3)';">
+                <i class="fas fa-ticket-alt"></i> View My Tickets & Orders
+            </a>
+        </div>
+        <?php endif; ?>
+
 		<?php if ($role == 1 || $role == 2) : ?>
             <!-- ============= EVENT MANAGEMENT SECTION ============= -->
             <div class="event-section">
@@ -430,20 +446,43 @@ $footer_base = '';
                             </div>
                         </div>
 
-                        <!-- Analytics Card -->
+                        <!-- Analytics Card (changes based on premium status) -->
                         <div class="product-card">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <div class="mb-3" style="font-size: 3rem;">
-                                        <i class="fas fa-chart-line"></i>
+                            <?php if ($has_premium): ?>
+                                <!-- Premium Analytics Card -->
+                                <div class="card h-100" style="border: 2px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);">
+                                    <div class="card-body text-center">
+                                        <div class="mb-3" style="font-size: 3rem; position: relative;">
+                                            <i class="fas fa-chart-line" style="color: #059669;"></i>
+                                            <i class="fas fa-crown" style="position: absolute; top: -5px; right: 35%; font-size: 1.2rem; color: #fbbf24;"></i>
+                                        </div>
+                                        <h5 style="color: #059669;">Premium Analytics</h5>
+                                        <p class="text-muted">
+                                            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                                <i class="fas fa-check-circle"></i> ACTIVE
+                                            </span>
+                                        </p>
+                                        <a href="admin/analytics.php" class="btn btn-custom mt-2" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                            <i class="fas fa-chart-line me-2"></i>View Premium Analytics
+                                        </a>
                                     </div>
-                                    <h5>Analytics</h5>
-                                    <p class="text-muted">Track your business performance</p>
-                                    <a href="admin/analytics.php" class="btn btn-custom mt-2">
-                                        <i class="fas fa-arrow-right me-2"></i>View
-                                    </a>
                                 </div>
-                            </div>
+                            <?php else: ?>
+                                <!-- Upgrade to Premium Card -->
+                                <div class="card h-100" style="border: 2px solid #fbbf24; background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);">
+                                    <div class="card-body text-center">
+                                        <div class="mb-3" style="font-size: 3rem; position: relative;">
+                                            <i class="fas fa-chart-bar" style="color: #f97316;"></i>
+                                            <i class="fas fa-crown" style="position: absolute; top: -5px; right: 35%; font-size: 1.2rem; color: #fbbf24;"></i>
+                                        </div>
+                                        <h5 style="color: #f97316;">Premium Analytics</h5>
+                                        <p class="text-muted">Unlock advanced insights</p>
+                                        <a href="view/premium_checkout.php" class="btn btn-custom mt-2" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                                            <i class="fas fa-rocket me-2"></i>Upgrade Now
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                 </div>
             </div>

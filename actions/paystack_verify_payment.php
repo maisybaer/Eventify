@@ -222,7 +222,8 @@ try {
             'customer_id' => $customer_id,
             'order_id' => $order_id,
             'currency' => 'GHS',
-            'payment_date' => $order_date
+            'payment_date' => $order_date,
+            'payment_reference' => $reference  // Add payment reference
         ];
 
         $payment_id = $orderController->record_payment_ctr($paymentParams);

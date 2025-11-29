@@ -1,9 +1,14 @@
 <?php
 require_once '../settings/core.php';
 require_once '../settings/db_class.php';
+require_once '../controllers/subscription_controller.php';
 
 $user_id = getUserID();
 $role = getUserRole();
+
+// Check if user has premium access
+$has_premium = has_active_premium_ctr($user_id, 'analytics_premium');
+$active_subscription = get_active_subscription_ctr($user_id, 'analytics_premium');
 
 // Fetch analytics data
 $db = new db_connection();
@@ -225,6 +230,48 @@ $topEvents = $db->db_fetch_all($topEventsQuery);
             <p class="text-muted">Track sales and revenue for your events</p>
         </div>
 
+        <?php if (!$has_premium): ?>
+        <!-- Premium Upgrade Banner -->
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);">
+            <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="position: absolute; bottom: -30px; left: -30px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="position: relative; z-index: 1; text-align: center;">
+                <div style="display: inline-block; background: rgba(255,255,255,0.2); padding: 0.5rem 1.5rem; border-radius: 50px; margin-bottom: 1rem; backdrop-filter: blur(10px);">
+                    <i class="fas fa-crown"></i> PREMIUM ANALYTICS
+                </div>
+                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Unlock Advanced Analytics</h2>
+                <p style="font-size: 1.1rem; opacity: 0.95; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Get detailed insights, customer demographics, performance tracking, and export capabilities for just ₵50/month
+                </p>
+                <a href="../view/premium_checkout.php" style="display: inline-block; background: white; color: #667eea; padding: 1rem 3rem; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 1.1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)';">
+                    <i class="fas fa-rocket"></i> Upgrade to Premium - ₵50/month
+                </a>
+            </div>
+        </div>
+
+        <!-- Basic Analytics (Locked for Non-Premium) -->
+        <div style="position: relative;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); z-index: 10; border-radius: 15px; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 2rem;">
+                <i class="fas fa-lock" style="font-size: 4rem; color: #cbd5e0; margin-bottom: 1rem;"></i>
+                <h3 style="color: #2d3748; margin-bottom: 0.5rem;">Premium Feature</h3>
+                <p style="color: #718096; text-align: center; max-width: 400px;">Upgrade to Premium Analytics to unlock detailed insights and advanced reporting features.</p>
+            </div>
+        <?php else: ?>
+        <!-- Premium Active Banner -->
+        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #6ee7b7; color: #065f46; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <i class="fas fa-crown" style="font-size: 2rem;"></i>
+                <div>
+                    <h5 style="margin: 0; font-weight: 700;">Premium Analytics Active</h5>
+                    <p style="margin: 0; font-size: 0.875rem;">Your subscription is active until <?php echo date('F j, Y', strtotime($active_subscription['end_date'])); ?></p>
+                </div>
+            </div>
+            <span style="background: rgba(5, 150, 105, 0.2); padding: 0.5rem 1rem; border-radius: 50px; font-weight: 600; font-size: 0.875rem;">
+                <i class="fas fa-check-circle"></i> ACTIVE
+            </span>
+        </div>
+        <?php endif; ?>
+
         <!-- Analytics Cards -->
         <div class="analytics-grid slide-up">
             <div class="stat-card orders">
@@ -287,6 +334,10 @@ $topEvents = $db->db_fetch_all($topEventsQuery);
         <?php endif; ?>
 
         
+
+    <?php if (!$has_premium): ?>
+        </div> <!-- Close locked overlay div -->
+    <?php endif; ?>
 
     </div>
 
