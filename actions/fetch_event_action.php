@@ -7,7 +7,7 @@
 
 require_once '../controllers/event_controller.php';
 require_once '../classes/event_class.php';
-require_once '../settings/core.php';
+require_once '../settings/session.php';
 header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? 'all';

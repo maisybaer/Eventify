@@ -1,5 +1,6 @@
 <?php
-require_once '../settings/core.php';
+session_start();
+// This is a public page - no authentication required
 require_once '../controllers/event_controller.php';
 require_once '../settings/db_class.php';
 
@@ -157,7 +158,7 @@ if (isset($_SESSION['user_id'])) {
             <a href="all_event.php"><i class="fas fa-arrow-left"></i> Back</a>
             <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="../login/register.php" class="btn btn-sm btn-primary">Register</a>
+            <a href="../login/register_customer.php" class="btn btn-sm btn-primary">Register</a>
             <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
         <?php endif; ?>
     </div>

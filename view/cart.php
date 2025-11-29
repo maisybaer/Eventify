@@ -350,7 +350,7 @@ if (!empty($cart_items)) {
             <a href ="all_event.php"><i class="fas fa-arrow-right"></i>Back</a>
             <a href="login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="login/register.php" class="btn btn-sm btn-primary">Register</a>
+            <a href="login/register_customer.php" class="btn btn-sm btn-primary">Register</a>
             <a href="login/login.php" class="btn btn-sm btn-secondary">Login</a>
         <?php endif; ?>
     </div>

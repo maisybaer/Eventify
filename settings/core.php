@@ -2,7 +2,18 @@
 session_start();
 
 if (empty($_SESSION['user_id'])) {
-    header('Location: login/login.php');
+    // Determine the correct path to login based on the current script location
+    $script_path = $_SERVER['SCRIPT_NAME'];
+
+    // If we're in a subdirectory (like /view/), use ../login/login.php
+    if (strpos($script_path, '/view/') !== false ||
+        strpos($script_path, '/admin/') !== false ||
+        strpos($script_path, '/vendor/') !== false) {
+        header('Location: ../login/login.php');
+    } else {
+        // If we're in the root directory, use login/login.php
+        header('Location: login/login.php');
+    }
     exit;
 }else{
     $user_id=getUserID();

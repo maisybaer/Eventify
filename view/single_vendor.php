@@ -1,5 +1,5 @@
 <?php
-require_once '../settings/core.php';
+require_once '../settings/session.php';
 require_once '../controllers/event_controller.php';
 require_once '../controllers/vendor_controller.php';
 require_once '../settings/db_class.php';
@@ -223,7 +223,7 @@ if ($customer_id > 0) {
             <a href="browse_vendors.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back</a>
             <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
+            <a href="../login/register_customer.php" class="btn btn-sm btn-outline-primary">Register</a>
             <a href="../login/login.php" class="btn btn-sm btn-outline-secondary">Login</a>
         <?php endif; ?>
     </header>

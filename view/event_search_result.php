@@ -21,7 +21,7 @@ require_once '../settings/core.php';
             <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary">Logout</a>
             <a href="../view/basket.php" class="btn btn-sm btn-outline-secondary">Basket</a>
         <?php else: ?>
-            <a href="../login/register.php" class="btn btn-sm btn-outline-primary">Register</a>
+            <a href="../login/register_customer.php" class="btn btn-sm btn-outline-primary">Register</a>
             <a href="../login/login.php" class="btn btn-sm btn-outline-secondary">Login</a>
         <?php endif; ?>
     </div>

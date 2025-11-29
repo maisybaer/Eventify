@@ -1,5 +1,6 @@
 <?php
-require_once '../settings/core.php';
+session_start();
+// This is a public page - no authentication required
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,9 +15,9 @@ require_once '../settings/core.php';
 </head>
 
 <body>
-    <!-- Navigation -->
+    <header>
     <div class="menu-tray">
-         <a href="home.php" class="logo">
+         <a href="../home.php" class="logo">
                 <img src="../settings/logo.png" alt="eventify logo" style="height:30px;">
          </a> 
         <?php if (isset($_SESSION['user_id'])): ?>
@@ -24,10 +25,11 @@ require_once '../settings/core.php';
             <a href="cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>
             <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-            <a href="../login/register.php" class="btn btn-sm btn-primary">Register</a>
+            <a href="../login/register_customer.php" class="btn btn-sm btn-primary">Register</a>
             <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
         <?php endif; ?>
     </div>
+    </header>
 
     <!-- Hero Section -->
     <div class="container header-container">

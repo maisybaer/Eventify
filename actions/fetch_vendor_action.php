@@ -6,7 +6,7 @@
  */
 
 header('Content-Type: application/json');
-require_once '../settings/core.php';
+require_once '../settings/session.php';
 require_once '../controllers/vendor_controller.php';
 
 $action = $_GET['action'] ?? 'all';
