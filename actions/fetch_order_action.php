@@ -81,7 +81,7 @@ try {
                     JOIN eventify_orderdetails od ON o.order_id = od.order_id
                     JOIN eventify_products pr ON od.event_id = pr.event_id
                     WHERE pr.added_by = $uid
-                    GROUP BY o.order_id
+                    GROUP BY o.order_id, o.invoice_no, o.customer_id, o.order_date, o.order_status, p.amt
                     ORDER BY o.order_date DESC, o.order_id DESC";
 
             $rows = $order->db_fetch_all($sql);
@@ -96,6 +96,7 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     error_log('Fetch order error: ' . $e->getMessage());
-    echo json_encode([]);
+    error_log('Stack trace: ' . $e->getTraceAsString());
+    echo json_encode(['status' => 'error', 'message' => 'Server error: ' . $e->getMessage()]);
 }
 ?>

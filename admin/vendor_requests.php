@@ -491,7 +491,7 @@ $vendor_requests = $bookingClass->getEventManagerVendorRequests($user_id);
 
             function updateRequestStatus(bookingId, approved) {
                 $.ajax({
-                    url: '../actions/approve_vendor_request_action.php',
+                    url: '../actions/update_vendor_booking_action.php',
                     method: 'POST',
                     data: {
                         booking_id: bookingId,

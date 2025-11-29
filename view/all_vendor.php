@@ -45,9 +45,6 @@ session_start();
         <!-- Search and Filter -->
         <div class="search-tray slide-up">
             <input type="text" id="searchBox" placeholder="🔍 Search vendors by name or service...">
-            <select id="categoryFilter">
-                <option value="">All Categories</option>
-            </select>
             <button class="btn btn-primary" id="searchBtn">
                 <i class="fas fa-search"></i> Search
             </button>

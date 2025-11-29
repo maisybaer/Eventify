@@ -369,7 +369,7 @@ if ($user_role == 2) {
 
             function updateBookingStatus(bookingId, status, successMessage) {
                 $.ajax({
-                    url: '../actions/update_booking_status_action.php',
+                    url: '../actions/update_booking_status.php',
                     method: 'POST',
                     data: {
                         booking_id: bookingId,

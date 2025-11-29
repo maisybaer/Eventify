@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 // Check if user is logged in
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     echo json_encode([
-        'success' => false,
+        'status' => 'error',
         'message' => 'Unauthorized access'
     ]);
     exit;
@@ -16,24 +16,15 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
 // Validate required parameters
 if (!isset($_POST['booking_id']) || !isset($_POST['status'])) {
     echo json_encode([
-        'success' => false,
+        'status' => 'error',
         'message' => 'Missing required parameters'
     ]);
     exit;
 }
 
 $booking_id = (int) $_POST['booking_id'];
-$status = mysqli_real_escape_string((new db_connection())->db_conn(), $_POST['status']);
-
-// Validate status
-$valid_statuses = ['approved', 'rejected', 'cancelled'];
-if (!in_array($status, $valid_statuses)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Invalid status'
-    ]);
-    exit;
-}
+$user_id = (int) $_SESSION['user_id'];
+$user_role = getUserRole();
 
 // Get database connection
 $db = new db_connection();
@@ -41,53 +32,65 @@ $conn = $db->db_conn();
 
 if (!$conn) {
     echo json_encode([
-        'success' => false,
+        'status' => 'error',
         'message' => 'Database connection failed'
     ]);
     exit;
 }
 
-// Verify user is a vendor and owns this booking
-$uid = (int) $_SESSION['user_id'];
+$status = mysqli_real_escape_string($conn, $_POST['status']);
 
-// First, get the customer record to check if user is a vendor
-$customer_sql = "SELECT * FROM eventify_customer WHERE customer_id = $uid AND user_role = 2 LIMIT 1";
-$customer_res = mysqli_query($conn, $customer_sql);
-
-if (!$customer_res || mysqli_num_rows($customer_res) === 0) {
+// Validate status - add more valid statuses
+$valid_statuses = ['approved', 'rejected', 'cancelled', 'confirmed', 'completed', 'pending'];
+if (!in_array($status, $valid_statuses)) {
     echo json_encode([
-        'success' => false,
-        'message' => 'Unauthorized: Not a vendor account'
+        'status' => 'error',
+        'message' => 'Invalid status'
     ]);
     exit;
 }
 
-$customer = mysqli_fetch_assoc($customer_res);
-$customer_name = mysqli_real_escape_string($conn, $customer['customer_name']);
+// Get booking details to verify ownership
+$booking_sql = "SELECT vb.*, e.added_by as event_creator_id
+                FROM eventify_vendor_bookings vb
+                LEFT JOIN eventify_products e ON vb.event_id = e.event_id
+                WHERE vb.booking_id = $booking_id
+                LIMIT 1";
+$booking_res = mysqli_query($conn, $booking_sql);
 
-// Get vendor ID
-$vendor_sql = "SELECT vendor_id FROM eventify_vendor WHERE vendor_desc = '$customer_name' LIMIT 1";
-$vendor_res = mysqli_query($conn, $vendor_sql);
-
-if (!$vendor_res || mysqli_num_rows($vendor_res) === 0) {
+if (!$booking_res || mysqli_num_rows($booking_res) === 0) {
     echo json_encode([
-        'success' => false,
-        'message' => 'Vendor profile not found'
+        'status' => 'error',
+        'message' => 'Booking not found'
     ]);
     exit;
 }
 
-$vendor = mysqli_fetch_assoc($vendor_res);
-$vendor_id = (int) $vendor['vendor_id'];
+$booking = mysqli_fetch_assoc($booking_res);
+$is_authorized = false;
 
-// Verify booking belongs to this vendor
-$verify_sql = "SELECT * FROM eventify_vendor_bookings WHERE booking_id = $booking_id AND vendor_id = $vendor_id LIMIT 1";
-$verify_res = mysqli_query($conn, $verify_sql);
+// Check authorization based on role and booking type
+if ($user_role == 2) {
+    // Vendor: can update bookings where they are the vendor
+    // Note: vendor_id in eventify_vendor_bookings is actually the customer_id of the vendor (role=2)
+    if ($booking['vendor_id'] == $user_id) {
+        $is_authorized = true;
+    }
+} else {
+    // Customer/Event Manager: can cancel bookings they made OR bookings for their events
+    if ($booking['customer_id'] == $user_id) {
+        // They made this booking
+        $is_authorized = true;
+    } elseif ($booking['event_creator_id'] == $user_id) {
+        // They own the event this booking is for
+        $is_authorized = true;
+    }
+}
 
-if (!$verify_res || mysqli_num_rows($verify_res) === 0) {
+if (!$is_authorized) {
     echo json_encode([
-        'success' => false,
-        'message' => 'Booking not found or does not belong to you'
+        'status' => 'error',
+        'message' => 'Unauthorized: You do not have permission to update this booking'
     ]);
     exit;
 }
@@ -98,13 +101,12 @@ $update_res = mysqli_query($conn, $update_sql);
 
 if ($update_res) {
     echo json_encode([
-        'success' => true,
-        'message' => 'Booking status updated successfully',
-        'status' => $status
+        'status' => 'success',
+        'message' => 'Booking status updated successfully'
     ]);
 } else {
     echo json_encode([
-        'success' => false,
+        'status' => 'error',
         'message' => 'Failed to update booking status: ' . mysqli_error($conn)
     ]);
 }

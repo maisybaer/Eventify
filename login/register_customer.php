@@ -119,6 +119,9 @@
                         <input type="file" class="form-control" id="user_image" name="user_image">
                     </div>
 
+                    <!-- Hidden field for customer role -->
+                    <input type="hidden" id="role" name="role" value="3">
+
                     <button type="submit" class="btn-login">Register</button>
                 </form>
             </div>
