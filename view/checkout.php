@@ -402,6 +402,9 @@ $cart_total = $cart_subtotal + $service_fee;
 
 <body>
     <header class="menu-tray">
+        <a href="home.php" class="logo">
+                <img src="../settings/logo.png" alt="eventify logo" style="height:30px;">
+         </a> 
         <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
         <a href="cart.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back to Cart</a>
         <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>

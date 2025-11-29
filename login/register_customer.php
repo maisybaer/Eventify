@@ -72,7 +72,7 @@
 </head>
 
 <body>
-    <a href="../index.php" class="back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    <a href="../home.php" class="back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
 
     <div class="login-container">
         <div class="login-card">

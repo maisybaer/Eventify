@@ -327,6 +327,10 @@ $footer_base = '';
 
 <body>
     <div class="menu-tray">
+         <a href="home.php" class="logo">
+                <div class="logo-icon"><img src="settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+         </a>  
+
         <?php if (isset($_SESSION['user_id'])): ?>
             <a href="index.php"><i class="fas fa-home"></i> Home</a>
             <a href="view/cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>
@@ -362,11 +366,11 @@ $footer_base = '';
                 <h3><i class="fas fa-search"></i> Discover Amazing Events</h3>
 
                 <div class="search-controls">
-                    <input type="text" id="searchBox" placeholder="🔍 Search events by name, category, location...">
+                    <input type="text" id="searchBox" placeholder="🔍 Search events by name, location, or description...">
                     <select id="categoryFilter">
                         <option value="">All Categories</option>
                     </select>
-                    <button id="searchBtn">
+                    <button class="btn btn-primary" id="searchBtn">
                         <i class="fas fa-search"></i> Search
                     </button>
                 </div>
@@ -504,6 +508,7 @@ $footer_base = '';
                         </a>
                     </div>
                 </div>
+
 
                 <div class="product-grid">
                 

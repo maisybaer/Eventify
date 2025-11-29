@@ -215,6 +215,9 @@ if ($customer_id > 0) {
 
 <body>
     <header class="menu-tray">
+        <a href="home.php" class="logo">
+                <img src="../settings/logo.png" alt="eventify logo" style="height:30px;">
+         </a> 
         <?php if (isset($_SESSION['user_id'])): ?>
             <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
             <a href="browse_vendors.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back</a>
@@ -224,6 +227,8 @@ if ($customer_id > 0) {
             <a href="../login/login.php" class="btn btn-sm btn-outline-secondary">Login</a>
         <?php endif; ?>
     </header>
+
+    
 
     <div class="container">
         <div class="vendor-header">

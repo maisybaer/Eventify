@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eventify - Book Amazing Events</title>
+    <link href="settings/favicon.ico" type="image/x-icon" rel="icon"/>
     <style>
         * {
             margin: 0;
@@ -562,15 +563,12 @@
 
     <nav>
         <div class="nav-container">
-            <a href="#" class="logo">
-                <div class="logo-icon">🎉</div>
-                <span>Eventify</span>
-            </a>
+         <a href="home.php" class="logo">
+                <img src="settings/logo.png" alt="eventify logo" style="height:30px;">
+         </a>  
             <div class="nav-links">
                 <a href="#features">Features</a>
-                <a href="#how-it-works">How it works</a>
-                <a href="#for-vendors">For Vendors</a>
-                <a href="#pricing">Pricing</a>
+                <a href="view/pricing.php">Pricing</a>
                 <a href="login/login.php" class="btn btn-primary">Get Started →</a>
             </div>
         </div>
@@ -578,9 +576,6 @@
 
     <section class="hero">
         <div class="hero-content">
-            <div class="badge">
-                🎯 Over 1,000+ events hosted successfully
-            </div>
             <h1>
                 Discover events.<br>
                 Book tickets.<br>
@@ -602,10 +597,6 @@
                     </svg>
                     Secure Payment
                 </div>
-            </div>
-            <div class="hero-buttons">
-                <a href="view/all_event.php" class="btn btn-primary">Browse Events</a>
-                <a href="login/register_business.php" class="btn btn-secondary">List Your Event</a>
             </div>
         </div>
 
@@ -698,7 +689,7 @@
             <h2>Ready to get started?</h2>
             <p>Join thousands of event managers, vendors, and customers using Eventify</p>
             <div class="cta-buttons">
-                <a href="login/register.php" class="btn btn-white">Create Free Account</a>
+                <a href="login/register_customer.php" class="btn btn-white">Create Free Account</a>
                 <a href="view/all_event.php" class="btn btn-outline-white">Explore Events</a>
             </div>
         </div>

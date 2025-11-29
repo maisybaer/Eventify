@@ -341,6 +341,9 @@ if (!empty($cart_items)) {
 <body>
     <!-- Navigation -->
    <div class="menu-tray">
+         <a href="home.php" class="logo">
+                <img src="../settings/logo.png" alt="eventify logo" style="height:30px;">
+         </a> 
         <?php if (isset($_SESSION['user_id'])): ?>
             <a href="../index.php"><i class="fas fa-home"></i> Home</a>
             <a href="cart.php"><i class="fas fa-shopping-cart"></i> Cart</a>

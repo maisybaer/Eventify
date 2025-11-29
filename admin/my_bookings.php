@@ -171,16 +171,25 @@ if ($user_role == 2) {
 </head>
 
 <body>
-    <header class="menu-tray">
-        <a href="../index.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-home"></i> Home</a>
-        <?php if ($user_role == 2): ?>
-            <a href="../admin/event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> My Events</a>
-        <?php else: ?>
-            <a href="all_event.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-calendar"></i> Events</a>
-        <?php endif; ?>
-        <a href="browse_vendors.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-users"></i> Vendors</a>
-        <a href="../login/logout.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  <header>
+    <!-- Navigation -->
+        <div class="menu-tray">
+            
+            <a href="../home.php" class="logo">
+                <div class="logo-icon"><img src="../settings/logo.png" alt="eventify logo" style="height:30px;"></div>
+            </a>
+            
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="../index.php"><i class="fas fa-home"></i> Home</a>
+                <a href="../login/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <?php else: ?>
+                <a href="../index.php" class="btn btn-sm btn-primary">Home</a>
+                <a href="../login/login.php" class="btn btn-sm btn-secondary">Login</a>
+            <?php endif; ?>
+        </div>
     </header>
+
 
     <div class="container">
         <div class="header-container">
