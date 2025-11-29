@@ -52,7 +52,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: '../actions/register_customer_action.php',
+            url: '../actions/register_action.php',
             type: 'POST',
             data: formData,
             contentType: false,

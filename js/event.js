@@ -280,11 +280,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadevents() {
         if (!tableBody) return;
 
-        fetch('../actions/fetch_event_action.php')
+        fetch('../actions/fetch_event_action.php?action=by_customer')
             .then(res => res.json())
-            .then(data => {
+            .then(response => {
+                console.log('Events response:', response);
                 tableBody.innerHTML = '';
-                if (!Array.isArray(data) || data.length === 0) {
+
+                // Handle response format {status, data}
+                let data = [];
+                if (response && response.status === 'success' && Array.isArray(response.data)) {
+                    data = response.data;
+                } else if (Array.isArray(response)) {
+                    data = response;
+                }
+
+                if (data.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="8" class="text-center">No event available</td></tr>`;
                     return;
                 }

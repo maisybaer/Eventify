@@ -265,7 +265,7 @@ if ($user_role != 2) {
 
             function loadEvents() {
                 $.ajax({
-                    url: '../actions/fetch_all_events_action.php',
+                    url: '../actions/fetch_event_action.php?action=all',
                     method: 'GET',
                     dataType: 'json'
                 }).done(function(response) {
@@ -293,7 +293,7 @@ if ($user_role != 2) {
 
             function loadExistingBookings() {
                 $.ajax({
-                    url: '../actions/fetch_vendor_event_requests_action.php',
+                    url: '../actions/fetch_vendor_booking_action.php?action=vendor_requests',
                     method: 'GET',
                     dataType: 'json'
                 }).done(function(response) {

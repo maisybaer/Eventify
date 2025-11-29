@@ -17,7 +17,7 @@ $(document).ready(function() {
         } 
 
         $.ajax({
-            url: '../actions/login_customer_action.php',
+            url: '../actions/login_action.php',
             type: 'POST',
             dataType:"json",
             data: {
@@ -48,11 +48,23 @@ $(document).ready(function() {
                     });
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Login AJAX Error:', xhr.responseText);
+                let errorMsg = 'An error occurred! Please try again later.';
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMsg = response.message;
+                    }
+                } catch(e) {
+                    if (xhr.responseText) {
+                        errorMsg = xhr.responseText.substring(0, 200);
+                    }
+                }
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'An error occurred! Please try again later. Troubleshoot: Login.js_ajax',
+                    text: errorMsg,
                 });
             }
         });

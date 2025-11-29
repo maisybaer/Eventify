@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadAllVendors() {
         // Fetch all vendors (customers with role=2)
-        fetch('../actions/fetch_all_vendors_action.php')
+        fetch('../actions/fetch_vendor_action.php')
             .then(res => res.json())
             .then(payload => {
                 if (!payload || payload.status !== 'success' || !Array.isArray(payload.data)) {

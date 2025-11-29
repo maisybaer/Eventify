@@ -25,9 +25,9 @@ function loadCheckoutSummary() {
     // Show loading state
     container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6b7280;">Loading order summary...</div>';
     
-    console.log('Fetching cart data from get_cart_action.php...');
-    
-    fetch('../actions/get_cart_action.php', {
+    console.log('Fetching cart data from fetch_cart_action.php...');
+
+    fetch('../actions/fetch_cart_action.php', {
         method: 'POST'
     })
     .then(response => {
@@ -228,7 +228,7 @@ function processCheckout() {
     .then(data => {
         console.log('Paystack init response:', data);
 
-        if (data.status === 'success') {
+        if (data.status === true || data.status === 'success') {
             // Store data for verification after payment
             window.paymentReference = data.reference;
             window.cartItems = window.currentCartItems || null;

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fetch orders that include events created by the logged-in user
     function loadOrder() {
-        fetch("../actions/fetch_orders_by_creator_action.php")
+        fetch("../actions/fetch_order_action.php?action=by_creator")
             .then(res => res.json())
             .then(data => {
                 console.log('fetch_orders_by_creator response:', data);
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const loading = document.getElementById('orderItemsLoading');
         if (container) container.innerHTML = '<div class="text-center py-4" id="orderItemsLoading">Loading items...</div>';
 
-        fetch(`../actions/fetch_order_products_action.php?order_id=${order_id}`)
+        fetch(`../actions/fetch_order_action.php?action=order_products&order_id=${order_id}`)
             .then(res => res.json())
             .then(data => {
                 // data should be an array of items or an error object

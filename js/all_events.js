@@ -138,15 +138,44 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadAllEvents() {
         fetch('../actions/fetch_event_action.php')
             .then(res => res.json())
-            .then(data => {
-                events = data || [];
+            .then(response => {
+                console.log('Events response:', response);
+                // Handle both formats: {status, data} or plain array
+                if (response && response.status === 'success' && Array.isArray(response.data)) {
+                    events = response.data;
+                } else if (Array.isArray(response)) {
+                    events = response;
+                } else {
+                    events = [];
+                }
                 renderEvents(events, 1);
                 populateFilters(events);
+
+                // Apply URL parameters if present
+                applyURLParams();
             })
             .catch(err => {
                 console.error('Failed to load events', err);
                 if (eventList) eventList.innerHTML = '<p>Cannot load items</p>';
             });
+    }
+
+    function applyURLParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchParam = urlParams.get('search');
+        const categoryParam = urlParams.get('category');
+
+        if (searchParam && searchBox) {
+            searchBox.value = searchParam;
+        }
+        if (categoryParam && categoryFilter) {
+            categoryFilter.value = categoryParam;
+        }
+
+        // Apply filters if any URL parameters were present
+        if (searchParam || categoryParam) {
+            applyFilters(1);
+        }
     }
 
     function applyFilters(page = 1) {
@@ -156,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtered = events.filter(p => {
             if (cat && String(p.event_cat) !== String(cat)) return false;
             if (q) {
-                const hay = ((p.event_desc||'') + ' ' + (p.category||'') + ' ' ).toLowerCase();
+                const hay = ((p.event_desc||'') + ' ' + (p.category||'') + ' ' + (p.event_location||'')).toLowerCase();
                 return hay.indexOf(q) !== -1;
             }
             return true;

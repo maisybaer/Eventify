@@ -262,7 +262,7 @@ $allCat = get_all_cat_ctr();
         window.currentUserId = <?php echo json_encode($user_id ?? null); ?>;
         window.currentUserRole = <?php echo json_encode($role ?? null); ?>;
     </script>
-    <script src="../js/event.js"></script>
+    <script src="../js/event.js?v=<?php echo time(); ?>"></script>
     
     <script>
         // Search functionality

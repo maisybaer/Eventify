@@ -244,10 +244,15 @@ if ($customer_id > 0) {
                 elseif (!empty($vendor['vendor_image'])) $imgField = $vendor['vendor_image'];
 
                 if (!empty($imgField)) {
+                    // Remove any /vendor/ prefix if it exists
+                    $imgField = str_replace('/vendor/uploads/', 'uploads/', $imgField);
+                    $imgField = str_replace('vendor/uploads/', 'uploads/', $imgField);
+
                     if (strpos($imgField, 'uploads/') === 0) {
                         $imgUrl = '../' . $imgField;
                     } elseif (strpos($imgField, '/uploads/') !== false) {
-                        $imgUrl = $imgField;
+                        // Extract just the filename and use correct path
+                        $imgUrl = '../uploads/' . basename($imgField);
                     } else {
                         $imgUrl = '../uploads/' . basename($imgField);
                     }
@@ -354,15 +359,24 @@ if ($customer_id > 0) {
 
             function loadCustomerEvents() {
                 $.ajax({
-                    url: '../actions/fetch_customer_events_action.php',
+                    url: '../actions/fetch_event_action.php?action=by_customer',
                     method: 'GET',
                     dataType: 'json'
                 }).done(function(response) {
+                    console.log('Customer events response:', response);
                     const eventSelect = $('#customerEvents');
                     eventSelect.html('<option value="">-- Select an event --</option>');
 
-                    if (response.status === 'success' && response.data && response.data.length > 0) {
-                        response.data.forEach(function(event) {
+                    // Handle response format
+                    let events = [];
+                    if (response && response.status === 'success' && Array.isArray(response.data)) {
+                        events = response.data;
+                    } else if (Array.isArray(response)) {
+                        events = response;
+                    }
+
+                    if (events.length > 0) {
+                        events.forEach(function(event) {
                             const eventName = event.event_desc || 'Unnamed Event';
                             const eventDate = event.event_date ? ' (' + event.event_date + ')' : '';
                             eventSelect.append(
@@ -372,7 +386,8 @@ if ($customer_id > 0) {
                     } else {
                         eventSelect.html('<option value="">-- No events found. Create an event first. --</option>');
                     }
-                }).fail(function() {
+                }).fail(function(xhr, status, error) {
+                    console.error('Failed to load customer events:', xhr.responseText);
                     $('#customerEvents').html('<option value="">-- Failed to load events --</option>');
                 });
             }
@@ -405,7 +420,7 @@ if ($customer_id > 0) {
 
                 // Create the booking
                 $.ajax({
-                    url: '../actions/create_vendor_booking_action.php',
+                    url: '../actions/add_vendor_booking_action.php',
                     method: 'POST',
                     data: {
                         vendor_id: vendorId,
@@ -424,7 +439,7 @@ if ($customer_id > 0) {
                             confirmButtonText: 'View My Bookings'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = '../view/my_bookings.php';
+                                window.location.href = '../admin/my_bookings.php';
                             }
                         });
 

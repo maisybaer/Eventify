@@ -48,7 +48,7 @@ $(document).ready(function() {
     // Function to update quantity
     function updateQuantity(productId, qty) {
             $.ajax({
-            url: '../actions/update_quantity_action.php',
+            url: '../actions/update_cart_action.php',
             method: 'POST',
             data: { event_id: productId, qty: qty },
             dataType: 'json',
@@ -93,7 +93,7 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '../actions/remove_from_cart_action.php',
+                    url: '../actions/delete_cart_action.php',
                     method: 'POST',
                     data: { event_id: productId },
                     dataType: 'json',
@@ -135,7 +135,7 @@ $(document).ready(function() {
     // Function to empty cart
     function emptyCart() {
         $.ajax({
-            url: '../actions/empty_cart_action.php',
+            url: '../actions/delete_all_cart_action.php',
             method: 'POST',
             dataType: 'json',
             success: function(response) {

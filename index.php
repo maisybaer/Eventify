@@ -620,5 +620,48 @@ $footer_base = '';
     <?php include 'includes/footer.php'; ?>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Populate category filter on homepage
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            if (categoryFilter) {
+                fetch('actions/fetch_category_action.php')
+                    .then(res => res.json())
+                    .then(response => {
+                        let categories = [];
+                        if (response && response.status === 'success' && Array.isArray(response.data)) {
+                            categories = response.data;
+                        } else if (Array.isArray(response)) {
+                            categories = response;
+                        }
+
+                        categories.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat.cat_id || cat.category_id;
+                            option.textContent = cat.cat_name || cat.category_name;
+                            categoryFilter.appendChild(option);
+                        });
+                    })
+                    .catch(err => console.error('Failed to load categories:', err));
+            }
+
+            // Search button redirect
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function() {
+                    const searchBox = document.getElementById('searchBox');
+                    const categoryFilter = document.getElementById('categoryFilter');
+                    const searchQuery = searchBox ? searchBox.value : '';
+                    const categoryId = categoryFilter ? categoryFilter.value : '';
+
+                    let url = 'view/all_event.php?';
+                    if (searchQuery) url += 'search=' + encodeURIComponent(searchQuery);
+                    if (categoryId) url += (searchQuery ? '&' : '') + 'category=' + encodeURIComponent(categoryId);
+
+                    window.location.href = url;
+                });
+            }
+        });
+    </script>
 </body>
 </html>
