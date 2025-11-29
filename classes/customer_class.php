@@ -21,7 +21,7 @@ class Customer extends db_connection
     {
         $hashpassword=password_hash($password, PASSWORD_DEFAULT);
             $stmt = $this->db->prepare("INSERT INTO eventify_customer (customer_name,customer_email,customer_pass,customer_country,customer_city,customer_contact,user_role,customer_image) values(?,?,?,?,?,?,?,?)");
-            $stmt->bind_param("ssssssss", $name, $email, $hashpassword, $country, $city, $phone_number, $role, $user_image);
+            $stmt->bind_param("ssssssis", $name, $email, $hashpassword, $country, $city, $phone_number, $role, $user_image);
             $ok = $stmt->execute();
             if ($ok) {
                 return $this->last_insert_id();
@@ -33,7 +33,7 @@ class Customer extends db_connection
     public function editCustomer($user_id,$name,$email,$country,$city,$phone_number,$role,$user_image)
     {
         $stmt = $this->db->prepare("UPDATE eventify_customer SET customer_name=?,customer_email=?,customer_country=?,customer_city=?,customer_contact=?,user_role=?,customer_image=? WHERE customer_id=?");
-            $stmt->bind_param("sssssssi", $name, $email, $country, $city, $phone_number, $role, $user_image, $user_id);
+            $stmt->bind_param("ssssisi", $name, $email, $country, $city, $phone_number, $role, $user_image, $user_id);
             return $stmt->execute();
     }
     //function to delete customer

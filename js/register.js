@@ -9,7 +9,7 @@ $(document).ready(function() {
         let city = $('#city').val();
         let phone_number = $('#phone_number').val();
         let user_image = $('#user_image')[0].files[0];
-        let role = $('input[name="role"]:checked').val();
+        let role = $('input[name="role"]').val();
 
         if (name == '' || email == '' || password == '' ||country == ''|| city == ''|| phone_number == '') {
             Swal.fire({
