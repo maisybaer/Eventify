@@ -106,7 +106,7 @@ Or use phpMyAdmin to import `db/dbforlab.sql`
 ```php
 <?php
 define('DB_HOST', 'localhost');
-define('DB_USER', 'your_username');
+define('DB_USER', 'maisy.baer');
 define('DB_PASS', 'your_password');
 define('DB_NAME', 'ecommerce_2025A_maisy_baer');
 ?>
@@ -147,7 +147,7 @@ Create a `.env` file in the root directory:
 ```env
 # Database Configuration
 DB_HOST=localhost
-DB_USER=your_username
+DB_USER=maisy.baer
 DB_PASS=your_password
 DB_NAME=ecommerce_2025A_maisy_baer
 
