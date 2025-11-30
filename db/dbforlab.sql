@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.1deb3
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Nov 27, 2025 at 02:26 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Host: localhost:3306
+-- Generation Time: Nov 30, 2025 at 03:00 PM
+-- Server version: 8.0.44-0ubuntu0.24.04.1
+-- PHP Version: 8.3.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,28 +18,8 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `eventify`
+-- Database: `ecommerce_2025A_maisy_baer`
 --
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cart`
---
-
-CREATE TABLE `cart` (
-  `cart_id` int(11) NOT NULL,
-  `event_id` int(11) NOT NULL,
-  `customer_id` int(11) NOT NULL,
-  `qty` int(11) NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `cart`
---
-
-INSERT INTO `cart` (`cart_id`, `event_id`, `customer_id`, `qty`) VALUES
-(1, 35, 2, 1);
 
 -- --------------------------------------------------------
 
@@ -48,11 +28,11 @@ INSERT INTO `cart` (`cart_id`, `event_id`, `customer_id`, `qty`) VALUES
 --
 
 CREATE TABLE `eventify_cart` (
-  `event_id` int(11) NOT NULL,
-  `cart_id` int(11) DEFAULT NULL,
-  `qty` int(11) NOT NULL,
-  `customer_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `event_id` int NOT NULL,
+  `cart_id` int DEFAULT NULL,
+  `qty` int NOT NULL,
+  `customer_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -61,20 +41,10 @@ CREATE TABLE `eventify_cart` (
 --
 
 CREATE TABLE `eventify_categories` (
-  `cat_id` int(11) NOT NULL,
+  `cat_id` int NOT NULL,
   `cat_name` varchar(100) NOT NULL,
-  `added_by` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data for table `eventify_categories`
---
-
-INSERT INTO `eventify_categories` (`cat_id`, `cat_name`, `added_by`) VALUES
-(4, 'Party', 2),
-(6, 'Brunch', 2),
-(12, 'Lunch', 2),
-(13, 'Concert', 2);
+  `added_by` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -83,7 +53,7 @@ INSERT INTO `eventify_categories` (`cat_id`, `cat_name`, `added_by`) VALUES
 --
 
 CREATE TABLE `eventify_customer` (
-  `customer_id` int(11) NOT NULL,
+  `customer_id` int NOT NULL,
   `customer_name` varchar(100) NOT NULL,
   `customer_email` varchar(50) NOT NULL,
   `customer_pass` varchar(150) NOT NULL,
@@ -91,22 +61,8 @@ CREATE TABLE `eventify_customer` (
   `customer_city` varchar(30) NOT NULL,
   `customer_contact` varchar(15) NOT NULL,
   `customer_image` varchar(100) DEFAULT NULL,
-  `user_role` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data for table `eventify_customer`
---
-
-INSERT INTO `eventify_customer` (`customer_id`, `customer_name`, `customer_email`, `customer_pass`, `customer_country`, `customer_city`, `customer_contact`, `customer_image`, `user_role`) VALUES
-(1, 'Ama Mensah', 'test@email.com', '$2y$10$nrZ1BwLi8CA7RjQL6XXJGePrQogh2YqorQGRmAmMleEdZvv7gQnBe', 'Ghana', 'Accra', '0245678910', '../uploads/IMG_68d5750bbeac23.83433048.jpg', 2),
-(2, 'Admin', 'admin@email.com', '$2y$10$do.UHBOipK1WtcNKglOX7O.osYZNrCxcbO9wu.ngT2zgg/7Nn9/yy', 'Ghana', 'Accra', '0000000000', NULL, 1),
-(3, 'Lisa', 'lisa@email.com', '$2y$10$hDh338Un1el05ORz5DWys.OgzzBQwqrzo0EAJOZIuBRIF8EtJnaOC', 'Ghana', 'Accra', '0000000000', NULL, 1),
-(4, 'Kofi Mensah', 'kofi@email.com', '$2y$10$vVH4Ybn9ThLukynyL4sWKeYDCgNgLDgYP/y3kw4jL1RG2smU1fTjy', 'Ghana', 'Accra', '0000000000', '../uploads/IMG_68fde21ec92227.29789876.jpg', 2),
-(7, 'Test', 'test@test.com', '$2y$10$j.qy8t8xHZCgsfnUF0qB8uEmzht9PQ7jtDAj1uAymZjUIizVlFX/i', 'Ghana', 'Accra', '0000000000', NULL, 1),
-(8, 'Test', 'test@gmail.com', '$2y$10$TKIOvDd.mKewZ9KF.TvWX.VJ07DgjfPZus1o.r7aS3131sLlTr1k.', 'Ghana', 'Accra', '0000000000', NULL, 2),
-(9, 'Nana', 'nana@gmail.com', '$2y$10$DjOgc77hjFFm/SXdHzNkcOpIH7bbS0UFMZKgXsMa/3gnvk0bUb8xG', 'Ghana', 'Accra', '0000000000', NULL, 2),
-(10, 'Mimosami', 'mimosami@email.com', '$2y$10$Ad2RVagWBxT8MTy/aidiC.IHxIlNMMrtpy3HtGTwiR7XZ.Nb5Sshy', 'Ghana', 'Accra', '0000000000', NULL, 2);
+  `user_role` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -115,20 +71,10 @@ INSERT INTO `eventify_customer` (`customer_id`, `customer_name`, `customer_email
 --
 
 CREATE TABLE `eventify_orderdetails` (
-  `order_id` int(11) NOT NULL,
-  `event_id` int(11) NOT NULL,
-  `qty` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data for table `eventify_orderdetails`
---
-
-INSERT INTO `eventify_orderdetails` (`order_id`, `event_id`, `qty`) VALUES
-(2, 12, 3),
-(2, 14, 2),
-(3, 14, 1),
-(4, 12, 1);
+  `order_id` int NOT NULL,
+  `event_id` int NOT NULL,
+  `qty` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -137,23 +83,12 @@ INSERT INTO `eventify_orderdetails` (`order_id`, `event_id`, `qty`) VALUES
 --
 
 CREATE TABLE `eventify_orders` (
-  `order_id` int(11) NOT NULL,
-  `customer_id` int(11) NOT NULL,
-  `invoice_no` int(11) NOT NULL,
+  `order_id` int NOT NULL,
+  `customer_id` int NOT NULL,
+  `invoice_no` varchar(50) NOT NULL,
   `order_date` date NOT NULL,
   `order_status` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data for table `eventify_orders`
---
-
-INSERT INTO `eventify_orders` (`order_id`, `customer_id`, `invoice_no`, `order_date`, `order_status`) VALUES
-(1, 2, 0, '2025-11-25', 'Paid'),
-(2, 2, 0, '2025-11-25', 'Paid'),
-(3, 2, 0, '2025-11-25', 'Paid'),
-(4, 2, 0, '2025-11-25', 'Paid'),
-(5, 2, 0, '2025-11-26', 'Paid');
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -162,26 +97,32 @@ INSERT INTO `eventify_orders` (`order_id`, `customer_id`, `invoice_no`, `order_d
 --
 
 CREATE TABLE `eventify_payment` (
-  `pay_id` int(11) NOT NULL,
+  `pay_id` int NOT NULL,
   `amt` double NOT NULL,
-  `customer_id` int(11) NOT NULL,
-  `order_id` int(11) NOT NULL,
+  `customer_id` int NOT NULL,
+  `order_id` int NOT NULL,
   `currency` text NOT NULL,
   `payment_date` date NOT NULL,
   `payment_method` varchar(50) DEFAULT NULL COMMENT 'Payment method: paystack, cash, bank_transfer, etc.',
   `transaction_ref` varchar(100) DEFAULT NULL COMMENT 'Paystack transaction reference',
   `authorization_code` varchar(100) DEFAULT NULL COMMENT 'Authorization code from payment gateway',
   `payment_channel` varchar(50) DEFAULT NULL COMMENT 'Payment channel: card, mobile_money, etc.'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `eventify_payment`
+-- Table structure for table `eventify_payment_init`
 --
 
-INSERT INTO `eventify_payment` (`pay_id`, `amt`, `customer_id`, `order_id`, `currency`, `payment_date`, `payment_method`, `transaction_ref`, `authorization_code`, `payment_channel`) VALUES
-(1, 120.75, 2, 2, 'GHS', '2025-11-25', NULL, NULL, NULL, NULL),
-(2, 34.5, 2, 3, 'GHS', '2025-11-25', NULL, NULL, NULL, NULL),
-(3, 17.25, 2, 4, 'GHS', '2025-11-25', NULL, NULL, NULL, NULL);
+CREATE TABLE `eventify_payment_init` (
+  `id` int NOT NULL,
+  `customer_id` int NOT NULL,
+  `reference` varchar(100) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -190,8 +131,8 @@ INSERT INTO `eventify_payment` (`pay_id`, `amt`, `customer_id`, `order_id`, `cur
 --
 
 CREATE TABLE `eventify_products` (
-  `event_id` int(11) NOT NULL,
-  `event_cat` int(11) NOT NULL,
+  `event_id` int NOT NULL,
+  `event_cat` int NOT NULL,
   `event_desc` varchar(200) DEFAULT NULL,
   `event_price` double NOT NULL,
   `event_location` varchar(500) NOT NULL,
@@ -200,16 +141,29 @@ CREATE TABLE `eventify_products` (
   `event_end` time NOT NULL,
   `flyer` varchar(100) DEFAULT NULL,
   `event_keywords` varchar(100) DEFAULT NULL,
-  `added_by` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `added_by` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `eventify_products`
+-- Table structure for table `eventify_subscriptions`
 --
 
-INSERT INTO `eventify_products` (`event_id`, `event_cat`, `event_desc`, `event_price`, `event_location`, `event_date`, `event_start`, `event_end`, `flyer`, `event_keywords`, `added_by`) VALUES
-(35, 13, 'Afronation 2025', 150, 'Laboma', '2025-11-27', '12:00:00', '23:00:00', 'IMG_69272b2277b543.73843693.jpg', 'music, concert', 2),
-(36, 4, 'Tanks and Bikinis', 100, 'Laboma', '2025-11-30', '12:00:00', '22:00:00', 'IMG_69272bad836dc2.23613864.jpeg', 'music, party, beach', 2);
+CREATE TABLE `eventify_subscriptions` (
+  `subscription_id` int NOT NULL,
+  `customer_id` int NOT NULL,
+  `subscription_type` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'analytics_premium',
+  `status` enum('active','expired','cancelled','pending') COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(10) COLLATE utf8mb4_general_ci DEFAULT 'GHS',
+  `payment_reference` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `invoice_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -218,17 +172,10 @@ INSERT INTO `eventify_products` (`event_id`, `event_cat`, `event_desc`, `event_p
 --
 
 CREATE TABLE `eventify_vendor` (
-  `vendor_id` int(11) NOT NULL,
+  `vendor_id` int NOT NULL,
   `vendor_desc` varchar(150) NOT NULL,
   `vendor_type` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data for table `eventify_vendor`
---
-
-INSERT INTO `eventify_vendor` (`vendor_id`, `vendor_desc`, `vendor_type`) VALUES
-(1, 'Mimosami', 'default');
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -237,37 +184,24 @@ INSERT INTO `eventify_vendor` (`vendor_id`, `vendor_desc`, `vendor_type`) VALUES
 --
 
 CREATE TABLE `eventify_vendor_bookings` (
-  `booking_id` int(11) NOT NULL,
-  `vendor_id` int(11) NOT NULL,
-  `customer_id` int(11) NOT NULL,
-  `event_id` int(11) NOT NULL,
-  `booking_date` datetime NOT NULL DEFAULT current_timestamp(),
-  `booking_status` varchar(50) NOT NULL DEFAULT 'pending',
+  `booking_id` int NOT NULL,
+  `booking_type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'customer_to_vendor' COMMENT 'customer_to_vendor or vendor_to_event',
+  `vendor_id` int NOT NULL,
+  `customer_id` int NOT NULL,
+  `event_id` int NOT NULL,
+  `booking_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `booking_status` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `approved_by_vendor` tinyint(1) DEFAULT '1' COMMENT '1 if vendor approved (for vendor_to_event requests)',
+  `approved_by_event_manager` tinyint(1) DEFAULT '0' COMMENT '1 if event manager approved (for vendor_to_event requests)',
+  `event_manager_approved_date` datetime DEFAULT NULL COMMENT 'When event manager approved/rejected the request',
   `service_date` date DEFAULT NULL,
-  `notes` text DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_general_ci,
   `price` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `eventify_vendor_bookings`
---
-
-INSERT INTO `eventify_vendor_bookings` (`booking_id`, `vendor_id`, `customer_id`, `event_id`, `booking_date`, `booking_status`, `service_date`, `notes`, `price`) VALUES
-(1, 10, 2, 35, '2025-11-27 12:31:29', 'pending', NULL, NULL, NULL),
-(2, 10, 2, 35, '2025-11-27 12:31:29', 'pending', NULL, NULL, NULL),
-(3, 10, 2, 35, '2025-11-27 12:31:29', 'cancelled', NULL, NULL, NULL);
-
---
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `cart`
---
-ALTER TABLE `cart`
-  ADD PRIMARY KEY (`cart_id`),
-  ADD KEY `event_id` (`event_id`),
-  ADD KEY `customer_id` (`customer_id`);
 
 --
 -- Indexes for table `eventify_cart`
@@ -314,12 +248,31 @@ ALTER TABLE `eventify_payment`
   ADD KEY `idx_payment_method` (`payment_method`);
 
 --
+-- Indexes for table `eventify_payment_init`
+--
+ALTER TABLE `eventify_payment_init`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `reference` (`reference`),
+  ADD KEY `customer_id` (`customer_id`),
+  ADD KEY `created_at` (`created_at`),
+  ADD KEY `idx_reference_lookup` (`reference`,`created_at`);
+
+--
 -- Indexes for table `eventify_products`
 --
 ALTER TABLE `eventify_products`
   ADD PRIMARY KEY (`event_id`),
   ADD KEY `event_cat` (`event_cat`) USING BTREE,
   ADD KEY `fk_products_added_by` (`added_by`);
+
+--
+-- Indexes for table `eventify_subscriptions`
+--
+ALTER TABLE `eventify_subscriptions`
+  ADD PRIMARY KEY (`subscription_id`),
+  ADD KEY `idx_customer_status` (`customer_id`,`status`),
+  ADD KEY `idx_end_date` (`end_date`),
+  ADD KEY `idx_subscription_type` (`subscription_type`);
 
 --
 -- Indexes for table `eventify_vendor`
@@ -341,63 +294,62 @@ ALTER TABLE `eventify_vendor_bookings`
 --
 
 --
--- AUTO_INCREMENT for table `cart`
---
-ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
 -- AUTO_INCREMENT for table `eventify_categories`
 --
 ALTER TABLE `eventify_categories`
-  MODIFY `cat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `cat_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `eventify_customer`
 --
 ALTER TABLE `eventify_customer`
-  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `customer_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `eventify_orders`
 --
 ALTER TABLE `eventify_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `order_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `eventify_payment`
 --
 ALTER TABLE `eventify_payment`
-  MODIFY `pay_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `pay_id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `eventify_payment_init`
+--
+ALTER TABLE `eventify_payment_init`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `eventify_products`
 --
 ALTER TABLE `eventify_products`
-  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `event_id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `eventify_subscriptions`
+--
+ALTER TABLE `eventify_subscriptions`
+  MODIFY `subscription_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `eventify_vendor`
 --
 ALTER TABLE `eventify_vendor`
-  MODIFY `vendor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `vendor_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `eventify_vendor_bookings`
 --
 ALTER TABLE `eventify_vendor_bookings`
-  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `booking_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `cart`
---
-ALTER TABLE `cart`
-  ADD CONSTRAINT `cart_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `eventify_customer` (`customer_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `cart_event_fk` FOREIGN KEY (`event_id`) REFERENCES `eventify_products` (`event_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `eventify_cart`
@@ -432,6 +384,12 @@ ALTER TABLE `eventify_payment`
 ALTER TABLE `eventify_products`
   ADD CONSTRAINT `eventify_products_ibfk_1` FOREIGN KEY (`event_cat`) REFERENCES `eventify_categories` (`cat_id`),
   ADD CONSTRAINT `fk_products_added_by` FOREIGN KEY (`added_by`) REFERENCES `eventify_customer` (`customer_id`);
+
+--
+-- Constraints for table `eventify_subscriptions`
+--
+ALTER TABLE `eventify_subscriptions`
+  ADD CONSTRAINT `eventify_subscriptions_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `eventify_customer` (`customer_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `eventify_vendor_bookings`

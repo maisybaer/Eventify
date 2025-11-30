@@ -2,6 +2,7 @@
 require_once '../controllers/event_controller.php';
 require_once '../controllers/category_controller.php';
 require_once '../settings/core.php';
+require_once '../helpers/upload_helper.php';
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -40,56 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // For image upload
+    // For image upload - using remote upload API
     if (isset($_FILES['flyer']) && $_FILES['flyer']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../../uploads/';
-
-        // Create directory if it doesn't exist
-        if (!is_dir($uploadDir)) {
-            if (!mkdir($uploadDir, 0755, true)) {
-                error_log('Failed to create uploads directory: ' . $uploadDir);
-                $response['status'] = 'error';
-                $response['message'] = 'Failed to create uploads directory. Please contact administrator.';
-                echo json_encode($response);
-                exit();
-            }
-        }
-
-        // Check if directory is writable
-        if (!is_writable($uploadDir)) {
-            error_log('Uploads directory is not writable: ' . $uploadDir . ' (permissions: ' . substr(sprintf('%o', fileperms($uploadDir)), -4) . ')');
-            $response['status'] = 'error';
-            $response['message'] = 'Uploads directory is not writable. Please contact administrator.';
-            echo json_encode($response);
-            exit();
-        }
-
-        $fileTmp   = $_FILES['flyer']['tmp_name'];
-        $fileName  = basename($_FILES['flyer']['name']);
-        $fileExt   = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-        // Allowed extensions
         $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
-        if (!in_array($fileExt, $allowedExts)) {
-            $response['status'] = 'error';
-            $response['message'] = 'Only JPG, JPEG, PNG, and GIF images are allowed.';
-            echo json_encode($response);
-            exit();
-        }
+        $uploadResult = upload_file_to_api($_FILES['flyer'], $allowedExts);
 
-        // Unique filename
-        $newFileName = uniqid("IMG_", true) . "." . $fileExt;
-        $destPath = $uploadDir . $newFileName;
-
-        if (move_uploaded_file($fileTmp, $destPath)) {
-            // store filename only (consistent with update action)
-            $flyer = $newFileName;
+        if ($uploadResult['success']) {
+            // Store the full URL returned from the API
+            $flyer = $uploadResult['url'];
         } else {
-            $upload_error = error_get_last();
-            error_log('move_uploaded_file failed: ' . print_r($upload_error, true));
-            error_log('Source: ' . $fileTmp . ', Destination: ' . $destPath);
             $response['status'] = 'error';
-            $response['message'] = 'Image upload failed. Check server error logs for details.';
+            $response['message'] = $uploadResult['error'];
             echo json_encode($response);
             exit();
         }

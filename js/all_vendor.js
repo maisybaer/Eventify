@@ -31,13 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgSrc = p.image_url;
             } else if (p.flyer || p.vendor_image) {
                 const imgField = p.flyer || p.vendor_image;
-                if (String(imgField).indexOf('uploads') !== -1) {
+                // Check if it's a full URL (starts with http:// or https://)
+                if (/^https?:\/\//i.test(imgField)) {
+                    imgSrc = imgField;
+                } else if (String(imgField).indexOf('uploads') !== -1) {
                     imgSrc = '../' + String(imgField).replace(/^\/+/, '');
                 } else {
                     imgSrc = '../uploads/' + String(imgField).replace(/^\/+/, '');
                 }
             } else if (p.customer_image) {
-                imgSrc = String(p.customer_image).indexOf('uploads') !== -1 ? '../' + String(p.customer_image).replace(/^\/+/, '') : p.customer_image;
+                const custImg = p.customer_image;
+                // Check if it's a full URL
+                if (/^https?:\/\//i.test(custImg)) {
+                    imgSrc = custImg;
+                } else if (String(custImg).indexOf('uploads') !== -1) {
+                    imgSrc = '../' + String(custImg).replace(/^\/+/, '');
+                } else {
+                    imgSrc = custImg;
+                }
             } else {
                 imgSrc = fallbackSrc;
             }

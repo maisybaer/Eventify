@@ -2,6 +2,7 @@
 header('Content-Type: application/json');
 require_once '../settings/core.php';
 require_once '../settings/db_class.php';
+require_once '../helpers/upload_helper.php';
 
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Not authenticated']);
@@ -18,20 +19,18 @@ $city = isset($_POST['city']) ? trim($_POST['city']) : null;
 $vendor_type = isset($_POST['vendor_type']) ? trim($_POST['vendor_type']) : null;
 $description = isset($_POST['description']) ? trim($_POST['description']) : null;
 
-// Handle image upload
+// Handle image upload - using remote upload API
 $image_path = null;
 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $upload_dir = '../../uploads/';
-    $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
     $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $uploadResult = upload_file_to_api($_FILES['image'], $allowed_extensions);
 
-    if (in_array($file_extension, $allowed_extensions)) {
-        $new_filename = 'vendor_' . $customer_id . '_' . time() . '.' . $file_extension;
-        $target_path = $upload_dir . $new_filename;
-
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
-            $image_path = 'uploads/' . $new_filename;
-        }
+    if ($uploadResult['success']) {
+        // Store the full URL returned from the API
+        $image_path = $uploadResult['url'];
+    } else {
+        echo json_encode(['status' => 'error', 'message' => $uploadResult['error']]);
+        exit();
     }
 }
 

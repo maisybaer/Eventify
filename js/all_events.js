@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgSrc = p.image_url;
             } else if (p.flyer || p.event_image) {
                 const imgField = p.flyer || p.event_image;
-                if (String(imgField).indexOf('uploads') !== -1) {
+                // Check if it's a full URL (starts with http:// or https://)
+                if (/^https?:\/\//i.test(imgField)) {
+                    imgSrc = imgField;
+                } else if (String(imgField).indexOf('uploads') !== -1) {
                     imgSrc = '../' + String(imgField).replace(/^\/+/, '');
                 } else {
                     imgSrc = '../uploads/' + String(imgField).replace(/^\/+/, '');

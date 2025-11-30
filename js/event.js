@@ -305,9 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Event Image
                     const tdImg = document.createElement('td');
                     const img = document.createElement('img');
-                    let srcCandidate = event.image_url || (event.flyer ? ('uploads/' + event.flyer) : 'uploads/no-image.svg');
+
+                    // Handle image URL - check if flyer is a full URL first
+                    let srcCandidate = event.image_url || event.flyer || 'uploads/no-image.svg';
 
                     if (/^https?:\/\//i.test(srcCandidate)) {
+                        // It's a full URL from the remote API
                         img.src = srcCandidate;
                     } else if (srcCandidate.startsWith('/')) {
                         img.src = srcCandidate;

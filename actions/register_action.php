@@ -8,6 +8,7 @@ $response = array();
 
 
 require_once '../controllers/customer_controller.php';
+require_once '../helpers/upload_helper.php';
 
 //recieve data
 $name = $_POST['name'];
@@ -28,35 +29,17 @@ if (empty($name)||empty($email)||empty($password)||empty($country)||empty($phone
 }
 
 
-// For image upload
+// For image upload - using remote upload API
 if (isset($_FILES['user_image']) && $_FILES['user_image']['error'] === UPLOAD_ERR_OK) {
-    $uploadDir = '../../uploads/';
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
-    }
-
-    $fileTmp   = $_FILES['user_image']['tmp_name'];
-    $fileName  = basename($_FILES['user_image']['name']);
-    $fileExt   = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-    // Allowed extensions
     $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
-    if (!in_array($fileExt, $allowedExts)) {
-        $response['status'] = 'error';
-        $response['message'] = 'Only JPG, JPEG, PNG, and GIF images are allowed.';
-        echo json_encode($response);
-        exit();
-    }
+    $uploadResult = upload_file_to_api($_FILES['user_image'], $allowedExts);
 
-    // Unique filename
-    $newFileName = uniqid("IMG_", true) . "." . $fileExt;
-    $destPath = $uploadDir . $newFileName;
-
-    if (move_uploaded_file($fileTmp, $destPath)) {
-        $user_image = $destPath;
+    if ($uploadResult['success']) {
+        // Store the full URL returned from the API
+        $user_image = $uploadResult['url'];
     } else {
         $response['status'] = 'error';
-        $response['message'] = 'Image upload failed';
+        $response['message'] = $uploadResult['error'];
         echo json_encode($response);
         exit();
     }
