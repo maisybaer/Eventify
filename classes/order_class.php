@@ -38,15 +38,27 @@ class Order extends db_connection
     }
 
     /**
-     * Record a simulated payment in the payments table.
+     * Record a payment in the payments table.
      */
-    public function recordPayment($amt, $customer_id, $order_id, $currency, $payment_date)
+    public function recordPayment($amt, $customer_id, $order_id, $currency, $payment_date, $transaction_ref = null)
     {
-        $query = "INSERT INTO eventify_payment (amt, customer_id, order_id, currency, payment_date)
-              VALUES (?, ?, ?, ?, ?)";
-        $stmt = $this->db->prepare($query);
-        $stmt->bind_param("diiss", $amt, $customer_id, $order_id, $currency, $payment_date);
-        return $stmt->execute();
+        if ($transaction_ref) {
+            $query = "INSERT INTO eventify_payment (amt, customer_id, order_id, currency, payment_date, transaction_ref)
+                  VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param("diisss", $amt, $customer_id, $order_id, $currency, $payment_date, $transaction_ref);
+        } else {
+            $query = "INSERT INTO eventify_payment (amt, customer_id, order_id, currency, payment_date)
+                  VALUES (?, ?, ?, ?, ?)";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param("diiss", $amt, $customer_id, $order_id, $currency, $payment_date);
+        }
+
+        $result = $stmt->execute();
+        if ($result) {
+            return $this->db->insert_id;
+        }
+        return false;
     }
 
     /**

@@ -39,16 +39,19 @@ class OrderController
 
     /**
      * Record a payment
-     * $params: ['amt', 'customer_id', 'order_id', 'currency', 'payment_date']
+     * $params: ['amt', 'customer_id', 'order_id', 'currency', 'payment_date', 'payment_reference' (optional)]
      */
     public function record_payment_ctr($params)
     {
+        $payment_reference = $params['payment_reference'] ?? null;
+
         return $this->order->recordPayment(
             $params['amt'],
             $params['customer_id'],
             $params['order_id'],
             $params['currency'],
-            $params['payment_date']
+            $params['payment_date'],
+            $payment_reference
         );
     }
 

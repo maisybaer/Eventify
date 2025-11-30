@@ -148,13 +148,14 @@ try {
     $db = new db_connection();
     $conn = $db->db_conn();
 
-    $stmt = $conn->prepare("SELECT payment_id, order_id FROM eventify_payment WHERE payment_reference = ? LIMIT 1");
+    // Check using transaction_ref column
+    $stmt = $conn->prepare("SELECT pay_id, order_id FROM eventify_payment WHERE transaction_ref = ? LIMIT 1");
     if ($stmt) {
         $stmt->bind_param('s', $reference);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($existing_payment = $result->fetch_assoc()) {
-            error_log("Payment already processed - Reference: $reference, Payment ID: {$existing_payment['payment_id']}, Order ID: {$existing_payment['order_id']}");
+            error_log("Payment already processed - Reference: $reference, Payment ID: {$existing_payment['pay_id']}, Order ID: {$existing_payment['order_id']}");
 
             // Fetch the existing order details
             $stmt2 = $conn->prepare("SELECT invoice_no, order_date FROM eventify_orders WHERE order_id = ? LIMIT 1");
