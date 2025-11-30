@@ -1,31 +1,32 @@
 <?php
-//Database credentials
-// Settings/db_cred.php
+/**
+ * Database & Server Configuration
+ * Auto-detects environment and sets appropriate values
+ */
 
-// define('DB_HOST', 'localhost');
-// define('DB_USER', 'root');
-// define('DB_PASS', '');
-// define('DB_NAME', 'dbforlab');
-
-
-//if (!defined("SERVER")) {
-//    define("SERVER", "localhost");
-//}
-
-//if (!defined("USERNAME")) {
-//    define("USERNAME", "root");
-//}
-
-//if (!defined("PASSWD")) {
-//   define("PASSWD", "");
-//}
-
-//if (!defined("DATABASE")) {
-//    define("DATABASE", "shoppin");
-//}
-
+// Auto-detect if we're on production or local
 if (!defined("SERVER")) {
-    define("SERVER", "localhost");
+    // Check if we're on localhost or production
+    $is_localhost = (
+        $_SERVER['SERVER_NAME'] === 'localhost' ||
+        $_SERVER['SERVER_NAME'] === '127.0.0.1' ||
+        strpos($_SERVER['HTTP_HOST'], 'localhost') !== false
+    );
+
+    if ($is_localhost) {
+        // Local development - use localhost
+        define("SERVER", "localhost");
+    } else {
+        // Production server - build full URL dynamically
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST']; // e.g., 169.239.251.102:442
+
+        // Get the base path from the script name
+        // Remove /settings/db_cred.php to get base path
+        $script_dir = dirname(dirname($_SERVER['SCRIPT_NAME'])); // Gets /~maisy.baer/eventify/Eventify
+
+        define("SERVER", "$protocol://$host$script_dir");
+    }
 }
 
 if (!defined("USERNAME")) {
@@ -37,6 +38,12 @@ if (!defined("PASSWD")) {
 }
 
 if (!defined("DATABASE")) {
-    define("DATABASE", "eventify");
+    // Auto-detect database name too
+    $is_localhost = (strpos(SERVER, 'localhost') !== false);
+    if ($is_localhost) {
+        define("DATABASE", "eventify"); // Local database
+    } else {
+        define("DATABASE", "ecommerce_2025A_maisy_baer"); // Production database
+    }
 }
 ?>
