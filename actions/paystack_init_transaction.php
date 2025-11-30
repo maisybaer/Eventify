@@ -52,12 +52,30 @@ try {
     $customer_id = getUserID();
     $reference = 'EVENTIFY-' . $customer_id . '-' . time();
 
-    error_log("Initializing transaction - Customer: $customer_id, Amount: $amount GHS, Email: $customer_email");
+    error_log("Initializing transaction - Customer: $customer_id, Amount: $amount GHS, Email: $customer_email, Reference: $reference");
 
     // Store transaction reference in session for verification later
     $_SESSION['paystack_ref'] = $reference;
     $_SESSION['paystack_amount'] = $amount;
     $_SESSION['paystack_timestamp'] = time();
+
+    // Also store in a persistent way (database) as a backup for session loss
+    try {
+        require_once '../settings/db_class.php';
+        $db = new db_connection();
+        $conn = $db->db_conn();
+        if ($conn) {
+            $stmt = $conn->prepare("INSERT INTO eventify_payment_init (customer_id, reference, amount, email, created_at) VALUES (?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE amount = ?, email = ?, created_at = NOW()");
+            if ($stmt) {
+                $stmt->bind_param('isdsds', $customer_id, $reference, $amount, $customer_email, $amount, $customer_email);
+                $stmt->execute();
+                error_log("Payment initialization stored in database for reference: $reference");
+            }
+        }
+    } catch (Exception $db_ex) {
+        // Don't fail the payment if database storage fails
+        error_log("Warning: Could not store payment init in database: " . $db_ex->getMessage());
+    }
 
     // Initialize Paystack transaction (live/test real API call)
     $paystack_response = paystack_initialize_transaction($amount, $customer_email, $reference);

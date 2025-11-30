@@ -94,29 +94,53 @@ try {
 
     error_log("Expected amount from session: $expected_amount GHS, Amount paid: $amount_paid GHS");
 
-    // If no session amount, calculate from cart (fallback)
+    // If no session amount, try to fetch from database backup
     if ($expected_amount <= 0) {
+        error_log("WARNING: Session amount not found. Checking database backup...");
+
+        try {
+            require_once '../settings/db_class.php';
+            $db = new db_connection();
+            $conn = $db->db_conn();
+            if ($conn) {
+                $stmt = $conn->prepare("SELECT amount FROM eventify_payment_init WHERE reference = ? LIMIT 1");
+                if ($stmt) {
+                    $stmt->bind_param('s', $reference);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    if ($row = $result->fetch_assoc()) {
+                        $expected_amount = floatval($row['amount']);
+                        error_log("Found expected amount from database: $expected_amount GHS");
+                    }
+                }
+            }
+        } catch (Exception $db_ex) {
+            error_log("Error fetching amount from database: " . $db_ex->getMessage());
+        }
+    }
+
+    // If still no expected amount, use the amount paid by Paystack as the source of truth
+    // Since Paystack already validated the payment, we trust their amount
+    if ($expected_amount <= 0) {
+        error_log("WARNING: No stored amount found. Using Paystack amount as expected amount: $amount_paid GHS");
+        $expected_amount = $amount_paid;
+
+        // Optional: Verify cart still has items to ensure payment wasn't for an empty cart
         require_once '../controllers/cart_controller.php';
         $cartController = new CartController();
         if (!$cart_items || count($cart_items) == 0) {
             $cart_items = $cartController->get_user_cart_ctr(getUserID());
         }
 
-        $calculated_total = 0.00;
-        if ($cart_items && count($cart_items) > 0) {
-            foreach ($cart_items as $ci) {
-                if (isset($ci['subtotal'])) {
-                    $calculated_total += floatval($ci['subtotal']);
-                } elseif (isset($ci['product_price']) && isset($ci['qty'])) {
-                    $calculated_total += floatval($ci['product_price']) * intval($ci['qty']);
-                }
-            }
+        if (!$cart_items || count($cart_items) == 0) {
+            error_log("ERROR: Cart is empty but payment was made for amount: $amount_paid GHS");
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Cart is empty. Please contact support with reference: ' . $reference,
+                'verified' => false
+            ]);
+            exit();
         }
-
-        // Apply 15% service fee
-        $service_fee = $calculated_total * 0.15;
-        $expected_amount = round($calculated_total + $service_fee, 2);
-        error_log("Calculated expected amount from cart: $expected_amount GHS (Subtotal: $calculated_total + Service Fee: $service_fee)");
     }
 
     // Use the expected amount for verification

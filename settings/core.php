@@ -1,5 +1,17 @@
 <?php
-session_start();
+// Configure session before starting
+if (session_status() === PHP_SESSION_NONE) {
+    // Set session cookie parameters for better persistence
+    ini_set('session.cookie_lifetime', 7200); // 2 hours
+    ini_set('session.gc_maxlifetime', 7200);
+    ini_set('session.cookie_path', '/');
+    ini_set('session.cookie_httponly', 1);
+
+    // Use cookies only (not URL parameters)
+    ini_set('session.use_only_cookies', 1);
+
+    session_start();
+}
 
 if (empty($_SESSION['user_id'])) {
     // Determine the correct path to login based on the current script location
