@@ -242,54 +242,135 @@ Eventify follows the MVC (Model-View-Controller) architectural pattern:
 
 ```
 Eventify/
-├── actions/              # API endpoints and action handlers
+├── actions/
+│   ├── add_category_action
 │   ├── add_event_action.php
+│   ├── add_subscription_action.php
+│   ├── add_vendor_booking_action.php
 │   ├── add_to_cart_action.php
+│   ├── create_vendor_booking_action.php
+│   ├── create_subscription_table.php
+│   ├── delete_all_cart_action.php
+│   ├── delete_category_action
+│   ├── delete_event_action.php
+│   ├── delete_cart_action
+│   ├── add_event_action.php
+│   ├── fetch_cart_action.php
+│   ├── fetch_category_action.php
+│   ├── fetch_customer_action.php
+│   ├── fetch_event_action.php
+│   ├── fetch_order_action.php
+│   ├── login_action.php
 │   ├── paystack_init_transaction.php
-│   └── paystack_verify_payment.php
-├── admin/               # Admin panel pages
+│   ├── paystack_verify_payment.php
+│   ├── paystack_verify_subscriptiob.php
+│   ├── process_checkout_action.php
+│   ├── register_action.php
+│   ├── test_subscription.php
+│   ├── update_booking_status.php
+│   ├── update_cart_action.php
+│   ├── update_category_action.php
+│   ├── update_request_event_action.php
+│   ├── update_vendor_action.php
+│   ├── update_vendor_booking_action.php
+│   └── update_event_action.php
+│
+├── admin/
+│   ├── analytics.php
+│   ├── my_bookings.php
 │   ├── event.php
+│   ├── sales.php
 │   ├── category.php
-│   └── dashboard.php
-├── classes/             # Data access layer (Models)
+│   └── vendor_requests.php
+│
+├── classes/
 │   ├── cart_class.php
+│   ├── category_class.php
+│   ├── customer_class.php
 │   ├── event_class.php
 │   ├── order_class.php
+│   ├── subscription_class.php
+│   ├── vendor_class.php
 │   └── vendor_booking_class.php
-├── controllers/         # Business logic layer
+│
+├── controllers/
 │   ├── cart_controller.php
+│   ├── category_controller.php
+│   ├── customer_controller.php
 │   ├── event_controller.php
+│   ├── vendor_controller.php
+│   ├── vendor_booking_controller.php
+│   ├── subscription_controller.php
 │   └── vendor_booking_controller.php
-├── css/                 # Stylesheets
-├── db/                  # Database schema
+│
+├── helper/
+│   └── upload_helper.php
+│
+├── db/
 │   └── dbforlab.sql
-├── images/              # Uploaded images
-│   ├── events/
-│   ├── vendors/
-│   └── users/
-├── includes/            # Reusable components
+│
+├── includes/
 │   ├── header.php
-│   ├── footer.php
-│   └── nav.php
-├── js/                  # JavaScript files
-│   ├── event.js
+│   └── footer.php
+│
+├── js/
+│   ├── all_events.js
+│   ├── all_vendor.js
 │   ├── cart.js
-│   └── checkout.js
-├── login/               # Authentication
+│   ├── category.js
+│   ├── checkout.js
+│   ├── login.js
+│   ├── order.js
+│   ├── event.js
+│   ├── register.js
+│   └── vendor.js
+│
+├── login/
 │   ├── login.php
 │   ├── register_customer.php
+
+
+│   ├── register_business.php
 │   └── logout.php
-├── settings/            # Configuration files
+│
+├── settings/
 │   ├── core.php
 │   ├── db_class.php
-│   └── paystack_config.php
-├── view/                # Frontend pages
+│   ├── db_cred.php
+│   ├── favicon.ico
+│   ├── logo.png
+│   ├── paystack_config.php
+│   ├── session.php
+│   └── styles.css
+
+
+├── uploads/
+
+
+├── view/
+│   ├── browse_events_vendor.php
+│   ├── vendor.php
+│   ├── vendor_dashboard.php
+│   └── vendor_requests.php
+│
+├── view/
 │   ├── all_event.php
-│   ├── single_event.php
+│   ├── all_vendor.php
+│   ├── browse_events_vendor.php
+│   ├── cart.php
 │   ├── checkout.php
-│   └── browse_vendors.php
-├── home.php             # Landing page
-└── README.md            # This file
+│   ├── event_search_results.php
+│   ├── payment_success.php
+│   ├── paystack_callback.php
+│   ├── premium_checkout.php
+│   ├── single_event.php
+│   ├── single_vendor.php
+│   └── pricing.php
+│
+├── home.php
+├── index.php
+└── README.md
+
 ```
 
 ## 📡 API Documentation
