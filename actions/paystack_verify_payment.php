@@ -148,6 +148,21 @@ try {
     $db = new db_connection();
     $conn = $db->db_conn();
 
+    // Use GET_LOCK to prevent race conditions (concurrent verification requests)
+    $lock_name = "payment_verify_" . $reference;
+    $lock_result = mysqli_query($conn, "SELECT GET_LOCK('$lock_name', 10)");
+    $lock_acquired = false;
+    if ($lock_result) {
+        $lock_row = mysqli_fetch_row($lock_result);
+        $lock_acquired = ($lock_row[0] == 1);
+    }
+
+    if (!$lock_acquired) {
+        error_log("Failed to acquire lock for payment verification: $reference");
+        // Wait a moment and check if payment was processed by another request
+        sleep(2);
+    }
+
     // Check using transaction_ref column
     $stmt = $conn->prepare("SELECT pay_id, order_id FROM eventify_payment WHERE transaction_ref = ? LIMIT 1");
     if ($stmt) {
@@ -156,6 +171,9 @@ try {
         $result = $stmt->get_result();
         if ($existing_payment = $result->fetch_assoc()) {
             error_log("Payment already processed - Reference: $reference, Payment ID: {$existing_payment['pay_id']}, Order ID: {$existing_payment['order_id']}");
+
+            // Release lock
+            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
 
             // Fetch the existing order details
             $stmt2 = $conn->prepare("SELECT invoice_no, order_date FROM eventify_orders WHERE order_id = ? LIMIT 1");
@@ -222,6 +240,11 @@ try {
                 if (($current_time - $order_time) < 300) { // 5 minutes
                     error_log("Found recent order within 5 minutes - likely duplicate call. Order ID: {$recent_order['order_id']}");
 
+                    // Release lock
+                    if (isset($lock_name)) {
+                        mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+                    }
+
                     // Return success with the recent order
                     echo json_encode([
                         'status' => 'success',
@@ -239,6 +262,11 @@ try {
                     exit();
                 }
             }
+        }
+
+        // Release lock before throwing error
+        if (isset($lock_name)) {
+            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
         }
 
         throw new Exception("Cart is empty and no recent order found. Please contact support with reference: $reference");
@@ -333,7 +361,12 @@ try {
 
         // Log user activity
         error_log("User Activity - Completed payment via Paystack - Invoice: $invoice_no, Amount: GHS $total_amount, Reference: $reference");
-        
+
+        // Release lock before returning success
+        if (isset($lock_name) && isset($conn)) {
+            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+        }
+
         // Return success response
         echo json_encode([
             'status' => 'success',
@@ -350,18 +383,28 @@ try {
             'payment_method' => ucfirst($payment_method),
             'customer_email' => $customer_email
         ]);
-        
+
     } catch (Exception $e) {
         // Rollback database transaction on error
         mysqli_rollback($conn);
         error_log("Database transaction rolled back: " . $e->getMessage());
-        
+
+        // Release lock on error
+        if (isset($lock_name) && isset($conn)) {
+            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+        }
+
         throw $e;
     }
-    
+
 } catch (Exception $e) {
     error_log("Error in Paystack callback/verification: " . $e->getMessage());
-    
+
+    // Release lock on error
+    if (isset($lock_name) && isset($conn)) {
+        mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+    }
+
     echo json_encode([
         'status' => 'error',
         'verified' => false,
