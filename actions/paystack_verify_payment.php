@@ -271,21 +271,98 @@ try {
         error_log("No recent order found. Creating order from payment verification data.");
         error_log("IMPORTANT: Cart was empty - possibly due to localhost/server mismatch. Creating order with verified payment amount.");
 
-        // We'll proceed with creating an order, but mark it specially
-        // The order will have no items, which needs to be handled separately
-        // For now, we'll create a generic "Payment Received" order entry
+        // Create a placeholder order to record the successful payment
+        // This prevents payment loss and allows manual review later
+        error_log("Creating placeholder order for verified payment without cart items.");
 
-        // Release lock before throwing error - we can't create a proper order without cart items
-        if (isset($lock_name)) {
-            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+        try {
+            // Begin transaction for placeholder order
+            mysqli_begin_transaction($conn);
+
+            // Generate invoice number
+            $invoice_no = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
+            $order_date = date('Y-m-d');
+
+            // Create order with special status for manual review
+            $orderController = new OrderController();
+            $orderParams = [
+                'customer_id' => $customer_id,
+                'invoice_no' => $invoice_no,
+                'order_date' => $order_date,
+                'order_status' => 'Paid - Pending Review'
+            ];
+
+            $order_id = $orderController->create_order_ctr($orderParams);
+            if (!$order_id) {
+                throw new Exception("Failed to create placeholder order");
+            }
+            error_log("Placeholder order created - ID: $order_id, Invoice: $invoice_no");
+
+            // Record the payment
+            $paymentParams = [
+                'amt' => $total_amount,
+                'customer_id' => $customer_id,
+                'order_id' => $order_id,
+                'currency' => 'GHS',
+                'payment_date' => $order_date,
+                'payment_reference' => $reference
+            ];
+
+            $payment_id = $orderController->record_payment_ctr($paymentParams);
+            if (!$payment_id) {
+                throw new Exception("Failed to record payment for placeholder order");
+            }
+            error_log("Payment recorded for placeholder order - ID: $payment_id, Reference: $reference");
+
+            // Commit the transaction
+            mysqli_commit($conn);
+            error_log("Placeholder order transaction committed successfully");
+
+            // Clear session payment data
+            unset($_SESSION['paystack_ref']);
+            unset($_SESSION['paystack_amount']);
+            unset($_SESSION['paystack_timestamp']);
+
+            // Release lock
+            if (isset($lock_name)) {
+                mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+            }
+
+            // Log for admin review
+            error_log("ADMIN REVIEW NEEDED: Order $invoice_no created without cart items. Payment verified and recorded. Customer: $customer_id, Amount: $total_amount GHS, Reference: $reference");
+
+            // Return success with note about manual review
+            echo json_encode([
+                'status' => 'success',
+                'verified' => true,
+                'message' => 'Payment successful! Your order is being processed.',
+                'order_id' => $order_id,
+                'invoice_no' => $invoice_no,
+                'total_amount' => number_format($total_amount, 2),
+                'currency' => 'GHS',
+                'order_date' => date('F j, Y', strtotime($order_date)),
+                'customer_name' => $customer_name,
+                'payment_reference' => $reference,
+                'manual_review' => true,
+                'note' => 'Your payment has been received. Our team will contact you shortly to confirm your order details.'
+            ]);
+            exit();
+
+        } catch (Exception $placeholder_ex) {
+            // Rollback placeholder order transaction
+            mysqli_rollback($conn);
+            error_log("Failed to create placeholder order: " . $placeholder_ex->getMessage());
+
+            // Release lock
+            if (isset($lock_name)) {
+                mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
+            }
+
+            // Log critical issue
+            error_log("CRITICAL: Payment verified but cart empty and placeholder order failed. Reference: $reference, Customer: $customer_id, Amount: $total_amount GHS");
+
+            throw new Exception("Payment verified but order creation failed. Please contact support with reference: $reference. Your payment is safe and will be processed manually.");
         }
-
-        // Log the issue for manual review
-        error_log("CRITICAL: Payment verified but cart empty. Reference: $reference, Customer: $customer_id, Amount: $total_amount GHS");
-        error_log("This likely indicates a localhost/production server mismatch or session loss.");
-        error_log("Payment was successful on Paystack but order cannot be created without cart items.");
-
-        throw new Exception("Cart is empty. Payment was successful but order creation failed. Please contact support with reference: $reference. Your payment will be refunded if order is not processed.");
     }
     
     // Create database connection for transaction
