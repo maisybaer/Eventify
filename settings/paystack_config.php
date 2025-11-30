@@ -16,14 +16,22 @@ define('PAYSTACK_VERIFY_ENDPOINT', PAYSTACK_API_URL . '/transaction/verify/');
 
 define('APP_ENVIRONMENT', 'test');
 
-// Build a proper APP_BASE_URL. If SERVER doesn't include a scheme, assume http://
+// Build a proper APP_BASE_URL
 $server_host = SERVER;
-if (!preg_match('#^https?://#i', $server_host)) {
-    $server_host = 'http://' . $server_host;
+
+// If SERVER already contains the full URL (from auto-detection), use it as-is
+if (preg_match('#^https?://#i', $server_host)) {
+    // Already has protocol, use directly
+    $app_base = rtrim($server_host, '/');
+} else {
+    // Old format (just hostname), add protocol and /Eventify
+    if (!preg_match('#^https?://#i', $server_host)) {
+        $server_host = 'http://' . $server_host;
+    }
+    $app_base = rtrim($server_host, '/') . '/Eventify';
 }
-// Ensure no trailing slash
-$server_host = rtrim($server_host, '/');
-define('APP_BASE_URL', $server_host . '/Eventify');
+
+define('APP_BASE_URL', $app_base);
 define('PAYSTACK_CALLBACK_URL', APP_BASE_URL . '/view/paystack_callback.php'); // Callback after payment
 
 /**
