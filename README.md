@@ -13,8 +13,6 @@ A comprehensive event management platform that connects event managers, vendors,
 - [API Documentation](#-api-documentation)
 - [Database Schema](#-database-schema)
 - [Technologies Used](#-technologies-used)
-- [Contributing](#-contributing)
-- [License](#-license)
 - [Contact](#-contact)
 
 ## Features
