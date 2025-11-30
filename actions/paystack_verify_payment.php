@@ -182,19 +182,27 @@ try {
 
         // Add order details for each cart item
         foreach ($cart_items as $item) {
+            // cart items may come with different keys depending on source; prefer event_id
+            $event_id = isset($item['event_id']) ? $item['event_id'] : (isset($item['p_id']) ? $item['p_id'] : null);
+            $qty = isset($item['qty']) ? intval($item['qty']) : (isset($item['quantity']) ? intval($item['quantity']) : 1);
+
+            if ($event_id === null) {
+                throw new Exception('Cart item missing event_id');
+            }
+
             $detailParams = [
                 'order_id' => $order_id,
-                'product_id' => $item['p_id'],
-                'qty' => $item['qty']
+                'product_id' => $event_id,
+                'qty' => $qty
             ];
 
             $detail_result = $orderController->add_order_details_ctr($detailParams);
 
             if (!$detail_result) {
-                throw new Exception("Failed to add order details for product: {$item['p_id']}");
+                throw new Exception("Failed to add order details for product: {$event_id}");
             }
 
-            error_log("Order detail added - Product: {$item['p_id']}, Qty: {$item['qty']}");
+            error_log("Order detail added - Product: {$event_id}, Qty: {$qty}");
         }
 
         // Record payment in database
