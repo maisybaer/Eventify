@@ -124,23 +124,6 @@ try {
     if ($expected_amount <= 0) {
         error_log("WARNING: No stored amount found. Using Paystack amount as expected amount: $amount_paid GHS");
         $expected_amount = $amount_paid;
-
-        // Optional: Verify cart still has items to ensure payment wasn't for an empty cart
-        require_once '../controllers/cart_controller.php';
-        $cartController = new CartController();
-        if (!$cart_items || count($cart_items) == 0) {
-            $cart_items = $cartController->get_user_cart_ctr(getUserID());
-        }
-
-        if (!$cart_items || count($cart_items) == 0) {
-            error_log("ERROR: Cart is empty but payment was made for amount: $amount_paid GHS");
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Cart is empty. Please contact support with reference: ' . $reference,
-                'verified' => false
-            ]);
-            exit();
-        }
     }
 
     // Use the expected amount for verification
@@ -160,6 +143,46 @@ try {
         exit();
     }
 
+    // Check if this payment has already been processed (duplicate verification)
+    require_once '../settings/db_class.php';
+    $db = new db_connection();
+    $conn = $db->db_conn();
+
+    $stmt = $conn->prepare("SELECT payment_id, order_id FROM eventify_payment WHERE payment_reference = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('s', $reference);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($existing_payment = $result->fetch_assoc()) {
+            error_log("Payment already processed - Reference: $reference, Payment ID: {$existing_payment['payment_id']}, Order ID: {$existing_payment['order_id']}");
+
+            // Fetch the existing order details
+            $stmt2 = $conn->prepare("SELECT invoice_no, order_date FROM eventify_orders WHERE order_id = ? LIMIT 1");
+            if ($stmt2) {
+                $stmt2->bind_param('i', $existing_payment['order_id']);
+                $stmt2->execute();
+                $result2 = $stmt2->get_result();
+                if ($existing_order = $result2->fetch_assoc()) {
+                    // Return success with existing order details
+                    echo json_encode([
+                        'status' => 'success',
+                        'verified' => true,
+                        'message' => 'Payment already processed successfully',
+                        'order_id' => $existing_payment['order_id'],
+                        'invoice_no' => $existing_order['invoice_no'],
+                        'total_amount' => number_format($total_amount, 2),
+                        'currency' => 'GHS',
+                        'order_date' => date('F j, Y', strtotime($existing_order['order_date'])),
+                        'customer_name' => getUserName(getUserID()),
+                        'payment_reference' => $reference,
+                        'duplicate' => true
+                    ]);
+                    exit();
+                }
+            }
+        }
+    }
+
     // Get cart items for order creation if not already loaded
     if (!isset($cartController)) {
         require_once '../controllers/cart_controller.php';
@@ -168,22 +191,56 @@ try {
     if (!$cart_items || count($cart_items) == 0) {
         $cart_items = $cartController->get_user_cart_ctr(getUserID());
     }
-    
+
     // Payment is verified! Now create the order in our system
     require_once '../controllers/cart_controller.php';
     require_once '../controllers/order_controller.php';
-    require_once '../settings/db_class.php';
-    
+
     $customer_id = getUserID();
     $customer_name = getUserName($customer_id);
-    
+
     // Get fresh cart items if not provided
     if (!$cart_items || count($cart_items) == 0) {
         $cart_items = $cartController->get_user_cart_ctr($customer_id);
     }
-    
+
     if (!$cart_items || count($cart_items) == 0) {
-        throw new Exception("Cart is empty");
+        // Cart is empty - this might be a duplicate call or the cart was already processed
+        // Check if there's a recent order for this customer
+        error_log("WARNING: Cart is empty for customer $customer_id. Checking for recent orders...");
+
+        $stmt = $conn->prepare("SELECT order_id, invoice_no, order_date FROM eventify_orders WHERE customer_id = ? ORDER BY order_date DESC LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param('i', $customer_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($recent_order = $result->fetch_assoc()) {
+                // Check if this order was created within the last 5 minutes
+                $order_time = strtotime($recent_order['order_date']);
+                $current_time = time();
+                if (($current_time - $order_time) < 300) { // 5 minutes
+                    error_log("Found recent order within 5 minutes - likely duplicate call. Order ID: {$recent_order['order_id']}");
+
+                    // Return success with the recent order
+                    echo json_encode([
+                        'status' => 'success',
+                        'verified' => true,
+                        'message' => 'Payment processed successfully',
+                        'order_id' => $recent_order['order_id'],
+                        'invoice_no' => $recent_order['invoice_no'],
+                        'total_amount' => number_format($total_amount, 2),
+                        'currency' => 'GHS',
+                        'order_date' => date('F j, Y', strtotime($recent_order['order_date'])),
+                        'customer_name' => $customer_name,
+                        'payment_reference' => $reference,
+                        'recovered' => true
+                    ]);
+                    exit();
+                }
+            }
+        }
+
+        throw new Exception("Cart is empty and no recent order found. Please contact support with reference: $reference");
     }
     
     // Create database connection for transaction
