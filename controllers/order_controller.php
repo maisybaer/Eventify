@@ -79,7 +79,7 @@ function delete_order_ctr($order_id)
  * @return array|false - Returns order details or false if not found
  */
 function get_order_details_ctr($order_id, $customer_id) {
-    $order = new order_class();
+    $order = new Order();
     return $order->get_order_details($order_id, $customer_id);
 }
 
@@ -89,7 +89,7 @@ function get_order_details_ctr($order_id, $customer_id) {
  * @return array|false - Returns array of products in the order or false if failed
  */
 function get_order_products_ctr($order_id) {
-    $order = new order_class();
+    $order = new Order();
     return $order->get_order_products($order_id);
 }
 
@@ -100,7 +100,7 @@ function get_order_products_ctr($order_id) {
  * @return bool - Returns true if successful, false if failed
  */
 function update_order_status_ctr($order_id, $order_status) {
-    $order = new order_class();
+    $order = new Order();
     return $order->update_order_status($order_id, $order_status);
 }
 

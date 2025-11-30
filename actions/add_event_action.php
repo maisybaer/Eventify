@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // For image upload
     if (isset($_FILES['flyer']) && $_FILES['flyer']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../uploads/';
+        $uploadDir = '../../uploads/';
 
         // Create directory if it doesn't exist
         if (!is_dir($uploadDir)) {
