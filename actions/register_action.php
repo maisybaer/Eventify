@@ -30,7 +30,7 @@ if (empty($name)||empty($email)||empty($password)||empty($country)||empty($phone
 
 // For image upload
 if (isset($_FILES['user_image']) && $_FILES['user_image']['error'] === UPLOAD_ERR_OK) {
-    $uploadDir = '../uploads/';
+    $uploadDir = '../../uploads/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0777, true);
     }

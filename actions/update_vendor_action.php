@@ -21,7 +21,7 @@ $description = isset($_POST['description']) ? trim($_POST['description']) : null
 // Handle image upload
 $image_path = null;
 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $upload_dir = '../uploads/';
+    $upload_dir = '../../uploads/';
     $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
     $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
 

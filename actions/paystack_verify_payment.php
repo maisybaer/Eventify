@@ -11,7 +11,7 @@ require_once '../settings/paystack_config.php';
 
 error_log("=== PAYSTACK CALLBACK/VERIFICATION ===");
 
-// Check if user is logged in (ensure session user id exists)
+// Check if user is logged in
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     echo json_encode([
         'status' => 'error',
@@ -43,18 +43,20 @@ if (isset($_SESSION['paystack_ref']) && $_SESSION['paystack_ref'] !== $reference
 try {
     error_log("Verifying Paystack transaction - Reference: $reference");
     
-    // Verify transaction with Paystack via the API
+    // Verify transaction with Paystack
     $verification_response = paystack_verify_transaction($reference);
+    
     if (!$verification_response) {
         throw new Exception("No response from Paystack verification API");
     }
+    
     error_log("Paystack verification response: " . json_encode($verification_response));
-
+    
     // Check if verification was successful
     if (!isset($verification_response['status']) || $verification_response['status'] !== true) {
         $error_msg = $verification_response['message'] ?? 'Payment verification failed';
         error_log("Payment verification failed: $error_msg");
-
+        
         echo json_encode([
             'status' => 'error',
             'message' => $error_msg,
@@ -88,281 +90,64 @@ try {
         exit();
     }
     
-    // Use the amount that was stored during initialization
-    // This ensures we verify against what was actually sent to Paystack
-    $expected_amount = isset($_SESSION['paystack_amount']) ? floatval($_SESSION['paystack_amount']) : 0;
+    // Ensure we have expected total server-side (calculate from cart if frontend didn't send it)
+    require_once '../controllers/cart_controller.php';
+    $cartController = new CartController();
+    $customer_id = getUserID();
 
-    error_log("Expected amount from session: $expected_amount GHS, Amount paid: $amount_paid GHS");
+    if (!$cart_items || count($cart_items) == 0) {
+        $cart_items = $cartController->get_user_cart_ctr($customer_id);
+    }
 
-    // If no session amount, try to fetch from database backup
-    if ($expected_amount <= 0) {
-        error_log("WARNING: Session amount not found. Checking database backup...");
-
-        try {
-            require_once '../settings/db_class.php';
-            $db = new db_connection();
-            $conn = $db->db_conn();
-            if ($conn) {
-                $stmt = $conn->prepare("SELECT amount FROM eventify_payment_init WHERE reference = ? LIMIT 1");
-                if ($stmt) {
-                    $stmt->bind_param('s', $reference);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    if ($row = $result->fetch_assoc()) {
-                        $expected_amount = floatval($row['amount']);
-                        error_log("Found expected amount from database: $expected_amount GHS");
-                    }
-                }
+    // Calculate cart subtotal
+    $cart_subtotal = 0.00;
+    if ($cart_items && count($cart_items) > 0) {
+        foreach ($cart_items as $ci) {
+            if (isset($ci['subtotal'])) {
+                $cart_subtotal += floatval($ci['subtotal']);
+            } elseif (isset($ci['product_price']) && isset($ci['qty'])) {
+                $cart_subtotal += floatval($ci['product_price']) * intval($ci['qty']);
             }
-        } catch (Exception $db_ex) {
-            error_log("Error fetching amount from database: " . $db_ex->getMessage());
         }
     }
 
-    // If still no expected amount, use the amount paid by Paystack as the source of truth
-    // Since Paystack already validated the payment, we trust their amount
-    if ($expected_amount <= 0) {
-        error_log("WARNING: No stored amount found. Using Paystack amount as expected amount: $amount_paid GHS");
-        $expected_amount = $amount_paid;
+    // Add 15% service fee (same as checkout.php)
+    $service_fee = $cart_subtotal * 0.15;
+    $calculated_total = $cart_subtotal + $service_fee;
+
+    if ($total_amount <= 0) {
+        $total_amount = round($calculated_total, 2);
     }
 
-    // Use the expected amount for verification
-    $total_amount = $expected_amount;
+    error_log("Cart subtotal: $cart_subtotal GHS, Service fee (15%): $service_fee GHS, Total: $total_amount GHS");
 
-    // Verify amount matches (with 1 pesewa tolerance for rounding)
-    if (abs($amount_paid - $expected_amount) > 0.01) {
-        error_log("Amount mismatch - Expected: $expected_amount GHS, Paid: $amount_paid GHS, Difference: " . abs($amount_paid - $expected_amount));
+    // Verify amount matches (with 1 pesewa tolerance)
+    if (abs($amount_paid - $total_amount) > 0.01) {
+        error_log("Amount mismatch - Expected: $total_amount GHS, Paid: $amount_paid GHS");
 
         echo json_encode([
             'status' => 'error',
             'message' => 'Payment amount does not match order total',
             'verified' => false,
-            'expected' => number_format($expected_amount, 2),
+            'expected' => number_format($total_amount, 2),
             'paid' => number_format($amount_paid, 2)
         ]);
         exit();
     }
-
-    // Check if this payment has already been processed (duplicate verification)
-    require_once '../settings/db_class.php';
-    $db = new db_connection();
-    $conn = $db->db_conn();
-
-    // Use GET_LOCK to prevent race conditions (concurrent verification requests)
-    $lock_name = "payment_verify_" . $reference;
-    $lock_result = mysqli_query($conn, "SELECT GET_LOCK('$lock_name', 10)");
-    $lock_acquired = false;
-    if ($lock_result) {
-        $lock_row = mysqli_fetch_row($lock_result);
-        $lock_acquired = ($lock_row[0] == 1);
-    }
-
-    if (!$lock_acquired) {
-        error_log("Failed to acquire lock for payment verification: $reference");
-        // Wait a moment and check if payment was processed by another request
-        sleep(2);
-    }
-
-    // Check using transaction_ref column
-    $stmt = $conn->prepare("SELECT pay_id, order_id FROM eventify_payment WHERE transaction_ref = ? LIMIT 1");
-    if ($stmt) {
-        $stmt->bind_param('s', $reference);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($existing_payment = $result->fetch_assoc()) {
-            error_log("Payment already processed - Reference: $reference, Payment ID: {$existing_payment['pay_id']}, Order ID: {$existing_payment['order_id']}");
-
-            // Release lock
-            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-
-            // Fetch the existing order details
-            $stmt2 = $conn->prepare("SELECT invoice_no, order_date FROM eventify_orders WHERE order_id = ? LIMIT 1");
-            if ($stmt2) {
-                $stmt2->bind_param('i', $existing_payment['order_id']);
-                $stmt2->execute();
-                $result2 = $stmt2->get_result();
-                if ($existing_order = $result2->fetch_assoc()) {
-                    // Return success with existing order details
-                    echo json_encode([
-                        'status' => 'success',
-                        'verified' => true,
-                        'message' => 'Payment already processed successfully',
-                        'order_id' => $existing_payment['order_id'],
-                        'invoice_no' => $existing_order['invoice_no'],
-                        'total_amount' => number_format($total_amount, 2),
-                        'currency' => 'GHS',
-                        'order_date' => date('F j, Y', strtotime($existing_order['order_date'])),
-                        'customer_name' => getUserName(getUserID()),
-                        'payment_reference' => $reference,
-                        'duplicate' => true
-                    ]);
-                    exit();
-                }
-            }
-        }
-    }
-
-    // Get cart items for order creation if not already loaded
-    if (!isset($cartController)) {
-        require_once '../controllers/cart_controller.php';
-        $cartController = new CartController();
-    }
-    if (!$cart_items || count($cart_items) == 0) {
-        $cart_items = $cartController->get_user_cart_ctr(getUserID());
-    }
-
+    
     // Payment is verified! Now create the order in our system
-    require_once '../controllers/cart_controller.php';
     require_once '../controllers/order_controller.php';
+    require_once '../settings/db_class.php';
 
-    $customer_id = getUserID();
     $customer_name = getUserName($customer_id);
 
     // Get fresh cart items if not provided
     if (!$cart_items || count($cart_items) == 0) {
         $cart_items = $cartController->get_user_cart_ctr($customer_id);
     }
-
+    
     if (!$cart_items || count($cart_items) == 0) {
-        // Cart is empty - this might be because we're on a different server (localhost vs production)
-        // or the cart was already processed. Try to use payment_init data as fallback.
-        error_log("WARNING: Cart is empty for customer $customer_id. Checking payment_init and recent orders...");
-
-        // First, check if there's a recent order for this customer
-        $stmt = $conn->prepare("SELECT order_id, invoice_no, order_date FROM eventify_orders WHERE customer_id = ? ORDER BY order_date DESC LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param('i', $customer_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($recent_order = $result->fetch_assoc()) {
-                // Check if this order was created within the last 5 minutes
-                $order_time = strtotime($recent_order['order_date']);
-                $current_time = time();
-                if (($current_time - $order_time) < 300) { // 5 minutes
-                    error_log("Found recent order within 5 minutes - likely duplicate call. Order ID: {$recent_order['order_id']}");
-
-                    // Release lock
-                    if (isset($lock_name)) {
-                        mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-                    }
-
-                    // Return success with the recent order
-                    echo json_encode([
-                        'status' => 'success',
-                        'verified' => true,
-                        'message' => 'Payment processed successfully',
-                        'order_id' => $recent_order['order_id'],
-                        'invoice_no' => $recent_order['invoice_no'],
-                        'total_amount' => number_format($total_amount, 2),
-                        'currency' => 'GHS',
-                        'order_date' => date('F j, Y', strtotime($recent_order['order_date'])),
-                        'customer_name' => $customer_name,
-                        'payment_reference' => $reference,
-                        'recovered' => true
-                    ]);
-                    exit();
-                }
-            }
-        }
-
-        // No recent order found - this is a genuine first-time payment
-        // Since payment_init was created successfully, we know payment was initiated properly
-        // Create a minimal order with the amount from payment_init/Paystack
-        error_log("No recent order found. Creating order from payment verification data.");
-        error_log("IMPORTANT: Cart was empty - possibly due to localhost/server mismatch. Creating order with verified payment amount.");
-
-        // Create a placeholder order to record the successful payment
-        // This prevents payment loss and allows manual review later
-        error_log("Creating placeholder order for verified payment without cart items.");
-
-        try {
-            // Begin transaction for placeholder order
-            mysqli_begin_transaction($conn);
-
-            // Generate invoice number
-            $invoice_no = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
-            $order_date = date('Y-m-d');
-
-            // Create order with special status for manual review
-            $orderController = new OrderController();
-            $orderParams = [
-                'customer_id' => $customer_id,
-                'invoice_no' => $invoice_no,
-                'order_date' => $order_date,
-                'order_status' => 'Paid - Pending Review'
-            ];
-
-            $order_id = $orderController->create_order_ctr($orderParams);
-            if (!$order_id) {
-                throw new Exception("Failed to create placeholder order");
-            }
-            error_log("Placeholder order created - ID: $order_id, Invoice: $invoice_no");
-
-            // Record the payment
-            $paymentParams = [
-                'amt' => $total_amount,
-                'customer_id' => $customer_id,
-                'order_id' => $order_id,
-                'currency' => 'GHS',
-                'payment_date' => $order_date,
-                'payment_reference' => $reference
-            ];
-
-            $payment_id = $orderController->record_payment_ctr($paymentParams);
-            if (!$payment_id) {
-                throw new Exception("Failed to record payment for placeholder order");
-            }
-            error_log("Payment recorded for placeholder order - ID: $payment_id, Reference: $reference");
-
-            // Commit the transaction
-            mysqli_commit($conn);
-            error_log("Placeholder order transaction committed successfully");
-
-            // Clear session payment data
-            unset($_SESSION['paystack_ref']);
-            unset($_SESSION['paystack_amount']);
-            unset($_SESSION['paystack_timestamp']);
-
-            // Release lock
-            if (isset($lock_name)) {
-                mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-            }
-
-            // Log for admin review
-            error_log("ADMIN REVIEW NEEDED: Order $invoice_no created without cart items. Payment verified and recorded. Customer: $customer_id, Amount: $total_amount GHS, Reference: $reference");
-
-            // Return success with note about manual review
-            echo json_encode([
-                'status' => 'success',
-                'verified' => true,
-                'message' => 'Payment successful! Your order is being processed.',
-                'order_id' => $order_id,
-                'invoice_no' => $invoice_no,
-                'total_amount' => number_format($total_amount, 2),
-                'currency' => 'GHS',
-                'order_date' => date('F j, Y', strtotime($order_date)),
-                'customer_name' => $customer_name,
-                'payment_reference' => $reference,
-                'manual_review' => true,
-                'note' => 'Your payment has been received. Our team will contact you shortly to confirm your order details.'
-            ]);
-            exit();
-
-        } catch (Exception $placeholder_ex) {
-            // Rollback placeholder order transaction
-            mysqli_rollback($conn);
-            error_log("Failed to create placeholder order: " . $placeholder_ex->getMessage());
-
-            // Release lock
-            if (isset($lock_name)) {
-                mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-            }
-
-            // Log critical issue
-            error_log("CRITICAL: Payment verified but cart empty and placeholder order failed. Reference: $reference, Customer: $customer_id, Amount: $total_amount GHS");
-
-            throw new Exception("Payment verified but order creation failed. Please contact support with reference: $reference. Your payment is safe and will be processed manually.");
-        }
+        throw new Exception("Cart is empty");
     }
     
     // Create database connection for transaction
@@ -377,8 +162,8 @@ try {
         // Generate invoice number
         $invoice_no = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
         $order_date = date('Y-m-d');
-        
-        // Create order in database using controller wrappers
+
+        // Create order in database using OrderController
         $orderController = new OrderController();
         $orderParams = [
             'customer_id' => $customer_id,
@@ -388,59 +173,55 @@ try {
         ];
 
         $order_id = $orderController->create_order_ctr($orderParams);
+
         if (!$order_id) {
             throw new Exception("Failed to create order in database");
         }
+
         error_log("Order created - ID: $order_id, Invoice: $invoice_no");
 
         // Add order details for each cart item
         foreach ($cart_items as $item) {
-            // Get event_id from cart item
-            $eventId = $item['event_id'] ?? $item['p_id'] ?? $item['product_id'] ?? null;
-            $qty = isset($item['qty']) ? intval($item['qty']) : (isset($item['quantity']) ? intval($item['quantity']) : 0);
-
-            if (!$eventId) {
-                error_log("Warning: Cart item missing event_id: " . json_encode($item));
-                continue; // Skip items without event_id
-            }
-
             $detailParams = [
                 'order_id' => $order_id,
-                'product_id' => $eventId,  // Controller expects 'product_id' but it's actually event_id
-                'qty' => $qty
+                'product_id' => $item['p_id'],
+                'qty' => $item['qty']
             ];
 
             $detail_result = $orderController->add_order_details_ctr($detailParams);
 
             if (!$detail_result) {
-                throw new Exception("Failed to add order details for event: {$eventId}");
+                throw new Exception("Failed to add order details for product: {$item['p_id']}");
             }
 
-            error_log("Order detail added - Event: {$eventId}, Qty: {$qty}");
+            error_log("Order detail added - Product: {$item['p_id']}, Qty: {$item['qty']}");
         }
 
-        // Record payment in database via controller
+        // Record payment in database
         $paymentParams = [
             'amt' => $total_amount,
             'customer_id' => $customer_id,
             'order_id' => $order_id,
             'currency' => 'GHS',
             'payment_date' => $order_date,
-            'payment_reference' => $reference  // Add payment reference
+            'payment_reference' => $reference
         ];
 
         $payment_id = $orderController->record_payment_ctr($paymentParams);
+        
         if (!$payment_id) {
             throw new Exception("Failed to record payment");
         }
+        
         error_log("Payment recorded - ID: $payment_id, Reference: $reference");
 
-        // Empty the customer's cart using CartController
-        $cartController = new CartController();
+        // Empty the customer's cart
         $empty_result = $cartController->empty_cart_ctr($customer_id);
+        
         if (!$empty_result) {
             throw new Exception("Failed to empty cart");
         }
+        
         error_log("Cart emptied for customer: $customer_id");
         
         // Commit database transaction
@@ -451,14 +232,6 @@ try {
         unset($_SESSION['paystack_ref']);
         unset($_SESSION['paystack_amount']);
         unset($_SESSION['paystack_timestamp']);
-
-        // Log user activity
-        error_log("User Activity - Completed payment via Paystack - Invoice: $invoice_no, Amount: GHS $total_amount, Reference: $reference");
-
-        // Release lock before returning success
-        if (isset($lock_name) && isset($conn)) {
-            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-        }
 
         // Return success response
         echo json_encode([
@@ -476,28 +249,18 @@ try {
             'payment_method' => ucfirst($payment_method),
             'customer_email' => $customer_email
         ]);
-
+        
     } catch (Exception $e) {
         // Rollback database transaction on error
         mysqli_rollback($conn);
         error_log("Database transaction rolled back: " . $e->getMessage());
-
-        // Release lock on error
-        if (isset($lock_name) && isset($conn)) {
-            mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-        }
-
+        
         throw $e;
     }
-
+    
 } catch (Exception $e) {
     error_log("Error in Paystack callback/verification: " . $e->getMessage());
-
-    // Release lock on error
-    if (isset($lock_name) && isset($conn)) {
-        mysqli_query($conn, "SELECT RELEASE_LOCK('$lock_name')");
-    }
-
+    
     echo json_encode([
         'status' => 'error',
         'verified' => false,
