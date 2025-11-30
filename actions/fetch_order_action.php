@@ -23,7 +23,21 @@ try {
     switch ($action) {
         case 'user_orders':
             // Fetch all orders for the current user
-            $orders = get_user_orders_ctr($user_id);
+            if (function_exists('get_user_orders_ctr')) {
+                $orders = get_user_orders_ctr($user_id);
+            } elseif (class_exists('Order')) {
+                $orderObj = new Order();
+                if (method_exists($orderObj, 'get_user_orders_ctr')) {
+                    $orders = $orderObj->get_user_orders_ctr($user_id);
+                } elseif (method_exists($orderObj, 'get_user_orders')) {
+                    $orders = $orderObj->get_user_orders($user_id);
+                } else {
+                    // Fallback: simple query via Order helper if available
+                    $orders = $orderObj->db_fetch_all("SELECT * FROM eventify_orders WHERE customer_id = " . intval($user_id));
+                }
+            } else {
+                $orders = [];
+            }
             if (!is_array($orders)) {
                 $orders = [];
             }
