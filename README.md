@@ -51,22 +51,22 @@ A comprehensive event management platform that connects event managers, vendors,
 
 ## 🎬 Demo
 
-**Live Demo**: [Coming Soon]
+**Live Demo**: http://169.239.251.102:442/~maisy.baer/eventify/Eventify/home.php
 
 ### Test Accounts
 
 ```
 Event Manager:
-Email: manager@eventify.com
-Password: manager123
+Email: admin@email.com
+Password: Admin@123
 
 Vendor:
-Email: vendor@eventify.com
-Password: vendor123
+Email: Mimosami@email.com
+Password: Mimo@123
 
 Customer:
-Email: customer@eventify.com
-Password: customer123
+Email: customer@email.com
+Password: cust@123
 ```
 
 ## 🚀 Installation
@@ -81,7 +81,7 @@ Password: customer123
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/eventify.git
+git clone https://github.com/maisybaer/eventify.git
 cd eventify
 ```
 
@@ -381,10 +381,6 @@ For complete API documentation, see [API_DOCS.md](docs/API_DOCS.md)
 #### eventify_customer
 For the complete schema, see [db/dbforlab.sql](db/dbforlab.sql)
 
-### Entity Relationship Diagram
-
-![ER Diagram](docs/images/er-diagram.png)
-
 ## 🛠️ Technologies Used
 
 ### Backend
@@ -468,30 +464,6 @@ Contributions are welcome! Please follow these steps:
 - [ ] Analytics dashboard requires premium subscription
 - [ ] Password reset functionality pending
 
-See the [Issues](https://github.com/yourusername/eventify/issues) page for a full list.
-
-## 🗺️ Roadmap
-
-### Version 1.1 (Q1 2026)
-- [ ] Email notifications for bookings and orders
-- [ ] Password reset functionality
-- [ ] Mobile responsive design improvements
-- [ ] Event capacity management
-
-### Version 1.2 (Q2 2026)
-- [ ] Advanced analytics dashboard
-- [ ] Vendor rating and review system
-- [ ] Event recommendations
-- [ ] Social media integration
-
-### Version 2.0 (Q3 2026)
-- [ ] Mobile app (React Native)
-- [ ] Multi-language support
-- [ ] Advanced search filters
-- [ ] Referral program
-
-```
-
 ## Acknowledgments
 
 - [Paystack](https://paystack.com/) for payment processing
@@ -503,13 +475,7 @@ See the [Issues](https://github.com/yourusername/eventify/issues) page for a ful
 
 **Project Link**: [https://github.com/maisybaer/eventify](https://github.com/maisybaer/eventify)
 
-**Documentation**: [https://eventify-docs.com](https://eventify-docs.com)
-
----
-
-<div align="center">
+**Documentation**: https://docs.google.com/document/d/1H-f7BMR_7_X2W8jhjIHoksc-zr2E-c3_iHI4Fudmz0I/edit?usp=sharing
 
 Made by [Maisy Baer](https://github.com/maisybaer)
 
-
-</div>
